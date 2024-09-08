@@ -68,7 +68,7 @@ RUN cmake -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=/usr -GNinja -S aws-ni
 RUN cmake --build aws-nitro-enclaves-sdk-c/build --parallel $(nproc) --target install
 RUN cmake --build aws-nitro-enclaves-sdk-c/build --parallel $(nproc) --target docs
 
-FROM ubuntu:24.04 as enclave_base
+FROM python:3.11.9-slim as enclave_base
 WORKDIR /app
 COPY --from=builder /usr/local/lib/libnsm.so /usr/local/lib/libnsm.so /app/
 COPY --from=builder /usr/bin/kmstool_enclave_cli /app/
