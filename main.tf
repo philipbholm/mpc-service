@@ -130,11 +130,13 @@ resource "aws_instance" "mpc_instance" {
     vpc_security_group_ids = [aws_security_group.main.id]
     subnet_id = aws_subnet.main.id
     security_groups = [aws_security_group.main.id]
-
     root_block_device {
         volume_size = 16
         volume_type = "gp3"
         encrypted = true
         delete_on_termination = true
+    }
+    metadata_options {
+        http_tokens = "required"
     }
 }
