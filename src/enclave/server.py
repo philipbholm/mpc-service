@@ -7,7 +7,7 @@ def main():
     # sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
     # cid = socket.VMADDR_CID_ANY
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    cid = socket.gethostbyname(socket.gethostname())
+    cid = "0.0.0.0"
     port = 5005
     sock.bind((cid, port))
     sock.listen(5)
