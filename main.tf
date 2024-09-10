@@ -148,6 +148,7 @@ resource "aws_instance" "mpc_instance" {
         # Allocate cpu and memory for the enclave
         # TODO: Make this more user friendly
         sudo tee /etc/nitro_enclaves/allocator.yaml <<-EOT
+        ---
         memory_mib: 6144
         cpu_count: 3
         EOT
