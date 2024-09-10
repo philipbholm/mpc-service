@@ -1,12 +1,7 @@
-FROM enclave_base
-
-RUN dnf -y install python3-pip
+FROM python:3.11.9-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
 COPY server.py .
 
-RUN pip3 install -r requirements.txt
-
-CMD ["python3", "server.py"]
+CMD ["python", "server.py"]
