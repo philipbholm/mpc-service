@@ -162,6 +162,7 @@ resource "aws_instance" "mpc_instance" {
         # TODO: Use parent/requirements.txt
         sudo dnf -y install python3-pip
         sudo pip3 install boto3==1.33.13
+        git clone https://github.com/philipbholm/mpc-service.git /home/ec2-user/mpc-service
         
         sudo reboot
     EOF
