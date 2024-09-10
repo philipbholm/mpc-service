@@ -1,17 +1,13 @@
-import json
 import socket
 
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(("localhost", 5005))
-print("Connected to enclave")
+def main():
+    sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+    sock.settimeout(5)
+    sock.connect((16, 5005))
+    sock.sendall("Hello".encode("UTF-8"))
+    sock.close()
 
 
-def send_json(json_data):
-    message = json.dumps(json_data).encode("UTF-8")
-    sock.send(message)
-
-
-send_json({"message": "Hello, world!"})
-send_json({"message": "Bye!"})
-sock.close()
+if __name__ == "__main__":
+    main()
