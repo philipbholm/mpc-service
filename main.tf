@@ -149,8 +149,8 @@ resource "aws_instance" "mpc_instance" {
         # TODO: Make this more user friendly
         sudo tee /etc/nitro_enclaves/allocator.yaml <<-EOT
         ---
-        memory_mib: 6144
-        cpu_count: 3
+        memory_mib: 4096
+        cpu_count: 2
         EOT
         # Enable and start services
         sudo systemctl enable --now docker
