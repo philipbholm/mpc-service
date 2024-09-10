@@ -6,7 +6,7 @@ def main():
     cid = socket.VMADDR_CID_ANY
     port = 5005
     sock.bind((cid, port))
-    sock.listen(5)
+    sock.listen(128)
     print(f"Enclave server is listening on port {port} and cid {cid}")
 
     while True:
