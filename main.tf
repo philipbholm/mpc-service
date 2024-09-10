@@ -119,8 +119,8 @@ resource "aws_iam_instance_profile" "mpc_instance_profile" {
 }
 
 resource "aws_instance" "mpc_instance" {
-    ami = "ami-065674f0cb1db636b"
-    instance_type = "c5.xlarge"
+    ami = "ami-077e7b988e15f909f"  # Amazon Linux 2023 AMI
+    instance_type = "c7g.xlarge"  # Graviton 3 (ARM), 4 vCPUs, 8 GiB RAM
     availability_zone = "eu-central-1a"
     key_name = aws_key_pair.instance_key.key_name
     enclave_options {
