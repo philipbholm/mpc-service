@@ -139,4 +139,29 @@ resource "aws_instance" "mpc_instance" {
     metadata_options {
         http_tokens = "required"
     }
+    user_data = <<-EOF
+        #!/bin/bash
+        # Install Nitro Enclaves CLI
+        sudo dnf -y install aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel
+        # Update user permissions
+        sudo usermod -aG ne ec2-user && sudo usermod -aG docker ec2-user
+        # Allocate cpu and memory for the enclave
+        # TODO: Make this more user friendly
+        sudo tee /etc/nitro_enclaves/allocator.yaml <<-EOT
+        memory_mib: 6144
+        cpu_count: 3
+        EOT
+        # Enable and start services
+        sudo systemctl enable --now docker
+        sudo systemctl enable --now nitro-enclaves-allocator.service
+        sudo systemctl enable --now nitro-enclaves-vsock-proxy.service
+        
+        # Application dependencies
+        sudo dnf -y install git-all
+        # TODO: Use parent/requirements.txt
+        sudo dnf -y install python3-pip
+        sudo pip3 install boto3==1.33.13
+        
+        sudo reboot
+    EOF
 }
