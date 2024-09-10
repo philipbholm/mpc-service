@@ -1,4 +1,4 @@
-FROM public.ecr.aws/amazonlinux/amazonlinux:2
+FROM amazonlinux:2
 
 RUN amazon-linux-extras install aws-nitro-enclaves-cli
 RUN yum install aws-nitro-enclaves-cli-devel -y
