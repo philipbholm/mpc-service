@@ -1,5 +1,5 @@
 FROM python:3.11.10-alpine3.20
 
-COPY sample.py .
+COPY server.py .
 
-CMD ["python", "sample.py", "server", "5005"]
+CMD ["python", "server.py"]
