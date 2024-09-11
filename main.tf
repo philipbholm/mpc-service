@@ -164,6 +164,10 @@ resource "aws_instance" "mpc_instance" {
         sudo pip3 install boto3==1.33.13
         git clone https://github.com/philipbholm/mpc-service.git /home/ec2-user/mpc-service
         sudo chown -R ec2-user:ec2-user /home/ec2-user/mpc-service
+
+        # Aliases
+        echo "alias stop='nitro-cli terminate-enclave --all'" >> .bashrc
+        echo "alias desc='nitro-cli describe-enclaves'" >> .bashrc
         
         sudo reboot
     EOF
