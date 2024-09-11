@@ -119,8 +119,8 @@ resource "aws_iam_instance_profile" "mpc_instance_profile" {
 }
 
 resource "aws_instance" "mpc_instance" {
-    ami = "ami-04f76ebf53292ef4d"  # Amazon Linux 2023 AMI
-    instance_type = "c5.xlarge"  # X86, 4 vCPUs, 8 GiB RAM
+    ami = "ami-077e7b988e15f909f"  # Amazon Linux 2023 AMI
+    instance_type = "c7g.large"  # Graviton 3 (ARM), 2 vCPUs, 4 GiB RAM
     availability_zone = "eu-central-1a"
     key_name = aws_key_pair.instance_key.key_name
     enclave_options {
@@ -149,8 +149,8 @@ resource "aws_instance" "mpc_instance" {
         # TODO: Make this more user friendly
         sudo tee /etc/nitro_enclaves/allocator.yaml <<-EOT
         ---
-        memory_mib: 4096
-        cpu_count: 2
+        memory_mib: 3072
+        cpu_count: 1
         EOT
         # Enable and start services
         sudo systemctl enable --now docker
