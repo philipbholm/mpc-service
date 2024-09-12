@@ -1,5 +1,7 @@
 .venv/
-build/
 .terraform/
 terraform.tfstate*
+*.eif
 data_owner/*.csv
+data_owner/*.enc
+data_owner/key_info.txt
