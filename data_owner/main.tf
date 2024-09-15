@@ -2,9 +2,25 @@ terraform {
     required_providers {
         aws = {
             source = "hashicorp/aws"
-            version = "~>5.66"
+            version = "5.67.0"
         }
     }
+}
+
+variable "region" {
+    description = "The AWS region to deploy resources"
+    type = string
+    default = "eu-central-1"
+}
+
+variable "mpc_instance_role_arn" {
+    description = "The ARN of the IAM instance role of the MPC server"
+    type = string
+}
+
+variable "enclave_image_sha" {
+    description = "The SHA hash of the enclave image"
+    type = string
 }
 
 provider "aws" {
@@ -25,6 +41,7 @@ output "s3_bucket_arn" {
 resource "aws_kms_key" "main" {
     key_usage = "ENCRYPT_DECRYPT"
     customer_master_key_spec = "SYMMETRIC_DEFAULT"
+    deletion_window_in_days = 7
 
     policy = jsonencode({
         Version = "2012-10-17"
@@ -33,7 +50,10 @@ resource "aws_kms_key" "main" {
                 Sid = "Enable IAM User Permissions",
                 Effect = "Allow"
                 Principal = {
-                    AWS = data.aws_caller_identity.current.arn
+                    AWS = [
+                        data.aws_caller_identity.current.arn,
+                        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+                    ]
                 }
                 Action = "kms:*"
                 Resource = "*"
@@ -41,7 +61,11 @@ resource "aws_kms_key" "main" {
             {
                 Sid = "Allow use of the key"
                 Effect = "Allow"
-                Action = "kms:Decrypt"
+                Action = [
+                    "kms:Decrypt",
+                    "kms:Encrypt",
+                    "kms:GenerateDataKey"
+                ]
                 Principal = {
                     AWS = var.mpc_instance_role_arn
                 }
