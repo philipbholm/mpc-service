@@ -117,6 +117,11 @@ resource "aws_iam_role" "mpc_instance_role" {
     })
 }
 
+output "mpc_instance_role_arn" {
+    value = aws_iam_role.mpc_instance_role.arn
+    sensitive = true
+}
+
 resource "aws_iam_role_policy_attachment" "enclave_actions_attachment" {
     role = aws_iam_role.mpc_instance_role.name
     policy_arn = aws_iam_policy.enclave_actions.arn
