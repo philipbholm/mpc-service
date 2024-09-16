@@ -10,4 +10,11 @@ RUN pip install --require-hashes --no-cache-dir -r requirements.txt
 
 COPY server.py .
 
+RUN days_ago=$((($(date +%s) - ${SOURCE_DATE_EPOCH}) / 86400 + 1)) && \
+    find / -xdev \( -path /dev -o -path /mnt -o -path /proc -o -path /sys -o -path /etc/hosts -o -path /etc/resolv.conf \) -prune -o -type f -mtime -${days_ago} -print0 \
+    | xargs -0 -r touch --date="@${SOURCE_DATE_EPOCH}" --no-dereference
+
+FROM scratch
+COPY --from=0 / /
+
 CMD ["/usr/local/bin/python3", "server.py"]
