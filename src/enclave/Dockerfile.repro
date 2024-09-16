@@ -2,6 +2,8 @@ FROM debian:trixie-20240904-slim
 
 ARG SOURCE_DATE_EPOCH
 
+RUN apt update && apt install -y python3
+
 RUN find $( ls / | grep -E -v "^(dev|mnt|proc|sys)$" ) \
   -newermt "@${SOURCE_DATE_EPOCH}" -writable -xdev \
   | xargs touch --date="@${SOURCE_DATE_EPOCH}" --no-dereference
