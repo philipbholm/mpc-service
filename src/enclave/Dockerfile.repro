@@ -1,0 +1,10 @@
+FROM debian:bullseye-20230109
+ARG SOURCE_DATE_EPOCH
+RUN echo "hello ${SOURCE_DATE_EPOCH}" >/hello
+
+RUN find $( ls / | grep -E -v "^(dev|mnt|proc|sys)$" ) \
+  -newermt "@${SOURCE_DATE_EPOCH}" -writable -xdev \
+  | xargs touch --date="@${SOURCE_DATE_EPOCH}" --no-dereference
+
+FROM scratch
+COPY --from=0 / /
