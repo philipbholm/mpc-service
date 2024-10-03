@@ -5,6 +5,7 @@ set -e
 echo "Preparing builder for enclave image."
 # Build enclave image locally and add image sha to config.tfvars
 # TODO: Make builds reproducible (no-cache and sha hashes for base images and python packages)
+# TODO: Install specific nitro-cli version
 docker build -t server --platform linux/arm64 ../src/enclave
 docker build -t builder - <<EOF
 FROM amazonlinux:2023
