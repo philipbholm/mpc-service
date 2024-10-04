@@ -17,14 +17,14 @@ RUN \
 COPY requirements.txt .
 
 RUN \
-    python3 -m venv .venv && \
-    .venv/bin/pip3 install --require-hashes --no-cache-dir -r requirements.txt
+    python3 -m venv venv && \
+    venv/bin/pip3 install --require-hashes --no-cache-dir -r requirements.txt
 
 COPY server.py .
 
 RUN find $( ls / | grep -E -v "^(dev|mnt|proc|sys)$" ) \
-    -newermt "@${SOURCE_DATE_EPOCH}" -writable -xdev \
-    | xargs touch --date="@${SOURCE_DATE_EPOCH}" --no-dereference
+    -xdev -writable -newermt "@${SOURCE_DATE_EPOCH}" \
+    | xargs -d '\n' touch --date="@${SOURCE_DATE_EPOCH}" --no-dereference
 
 FROM scratch
 COPY --from=0 / /
