@@ -14,6 +14,8 @@ RUN \
     apt install -y python3 python3-pip python3-venv && \
     rm -rf /var/log/* /var/cache/ldconfig/aux-cache
 
+WORKDIR /app
+
 COPY requirements.txt .
 
 RUN \
@@ -21,6 +23,8 @@ RUN \
     venv/bin/pip3 install --require-hashes --no-cache-dir -r requirements.txt
 
 COPY server.py .
+
+WORKDIR /
 
 RUN find $( ls / | grep -E -v "^(dev|mnt|proc|sys)$" ) \
     -xdev -writable -newermt "@${SOURCE_DATE_EPOCH}" \

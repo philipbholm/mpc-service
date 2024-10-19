@@ -6,6 +6,11 @@ set -e
 # https://medium.com/nttlabs/bit-for-bit-reproducible-builds-with-dockerfile-7cc2b9faed9f
 # https://reproducible-builds.org/
 
+# TODO:
+# - Make build reproducible on mac without python dependencies 
+# - Add dependecies from pip
+# - Ensure consistent results with remote instance
+
 echo "Preparing builder for enclave image."
 
 # Run buildkit with a specific version inside docker
@@ -20,13 +25,18 @@ docker buildx create \
 # Build enclave image locally and add image sha to config.tfvars
 # RUN find /app -exec touch -t 202401010000.00 {} +
 # TODO: Is --no-cache needed?
-docker build -t server \
+docker build -t local2 -f debian.Dockerfile --build-arg SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) .
+diffoci diff 
+
+
+docker build -t local2 \
+    -f debian.Dockerfile \
     --platform linux/arm64 \
     --build-arg SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) \
-    -f Dockerfile.alpine \
     .
-    --output type=image,rewrite-timestamp=true \  # Not working?
 
+    --no-cache \
+    --output type=image,rewrite-timestamp=true \
 docker build -t builder - <<EOF
 FROM amazonlinux:2023
 
