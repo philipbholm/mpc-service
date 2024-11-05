@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.8.3"
+  required_version = "~> 1.7.1"
 
   required_providers {
     aws = {
@@ -124,6 +124,11 @@ resource "aws_iam_role" "mpc_server" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "mpc_server_attachment" {
+  role       = aws_iam_role.mpc_server.name
+  policy_arn = aws_iam_policy.mpc_server.arn
+}
+
 resource "aws_iam_policy" "mpc_server" {
   name = "mpc-server"
 
@@ -142,9 +147,4 @@ resource "aws_iam_policy" "mpc_server" {
       }
     ]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "mpc_server_attachment" {
-  role       = aws_iam_role.mpc_server.name
-  policy_arn = aws_iam_policy.mpc_server.arn
 }
