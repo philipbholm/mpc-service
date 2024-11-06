@@ -4,4 +4,4 @@ WORKDIR /app
 
 RUN echo "Create a file" > file.txt
 
-COPY requirements.txt .
+COPY --chmod=0644 requirements.txt .
