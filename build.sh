@@ -23,7 +23,7 @@ docker buildx --builder repro \
     --platform linux/$TARGET_ARCH \
     --no-cache \
     --build-arg SOURCE_DATE_EPOCH=0 \
-    --output type=docker,rewrite-timestamp=true \
+    --output type=docker,dest=server.tar,rewrite-timestamp=true \
     src/enclave
 
 # Enable QEMU if necessary
