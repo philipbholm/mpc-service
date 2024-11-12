@@ -5,3 +5,5 @@
 terraform.tfstate*
 *.eif
 data_owner/data/
+example/
+*.tar
