@@ -11,7 +11,7 @@ terraform {
 
 provider "aws" {
   profile = "tofu-user"
-  region  = "eu-central-1"
+  region  = var.aws_region
 }
 
 data "aws_vpc" "main" {
@@ -37,15 +37,16 @@ data "aws_security_group" "full_access" {
 
 resource "aws_instance" "mpc_server" {
   ami                    = "ami-077e7b988e15f909f" # Amazon Linux 2023 AMI
-  instance_type          = "c7g.large"             # Graviton 3 (ARM), 2 vCPUs, 4 GiB RAM
-  availability_zone      = "eu-central-1a"
+  instance_type          = var.instance_type
+  availability_zone      = var.availability_zone
   key_name               = aws_key_pair.mpc_server.key_name
   iam_instance_profile   = aws_iam_instance_profile.mpc_server.name
   vpc_security_group_ids = [data.aws_security_group.full_access.id]
   subnet_id              = data.aws_subnet.public.id
+  associate_public_ip_address = true
 
   root_block_device {
-    volume_size           = 16
+    volume_size           = var.root_volume_size
     volume_type           = "gp3"
     encrypted             = true
     delete_on_termination = true
@@ -64,7 +65,7 @@ resource "aws_instance" "mpc_server" {
         # Install Nitro Enclaves CLI
         sudo dnf -y install aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel
         # Update user permissions
-        sudo usermo'd -aG ne ec2-user && sudo usermod -aG docker ec2-user
+        sudo usermod -aG ne ec2-user && sudo usermod -aG docker ec2-user
         # Allocate cpu and memory for the enclave
         # TODO: Make this more user friendly
         sudo tee /etc/nitro_enclaves/allocator.yaml <<-EOT
@@ -98,8 +99,8 @@ resource "aws_instance" "mpc_server" {
 }
 
 resource "aws_key_pair" "mpc_server" {
-  key_name   = "mpc-key"
-  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHcQK5Naws5UrdVATzc0XjtXyIMaGoVOOFMbMI+zEe3r"
+  key_name   = var.key_name
+  public_key = var.ssh_public_key
 }
 
 resource "aws_iam_instance_profile" "mpc_server" {
