@@ -1,3 +1,0 @@
-docker save -o remote.tar remote
-scp -i ~/.ssh/mpc-key.pem remote.tar ec2-user@3.71.18.20:/home/ec2-user/mpc-service/src/enclave/remote.tar ./
-docker load -i remote.tar
