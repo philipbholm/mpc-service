@@ -34,9 +34,11 @@ sudo usermod -aG docker $USER
 git clone https://github.com/philipbholm/mpc-service.git
 
 # Create aliases
-echo "alias build='docker buildx --builder repro build -t server --platform linux/arm64 --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave && docker load -i server.tar && sha256sum server.tar'" >> .bashrc
-echo "alias start='docker buildx --builder repro build -t server --platform linux/arm64 --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave && docker load -i server.tar && docker run --rm -it server /bin/bash'" >> .bashrc
 echo "alias prep='docker buildx create --driver=docker-container --driver-opt image=moby/buildkit:v0.17.0 --name repro && docker build -t builder --platform linux/arm64 .'" >> .bashrc
+echo "alias build='docker buildx --builder repro build -t server --platform linux/arm64 --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave && sha256sum server.tar'" >> .bashrc
+echo "alias buildnc='docker buildx --builder repro build -t server --platform linux/arm64 --no-cache --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave && sha256sum server.tar'" >> .bashrc
+echo "alias start='docker buildx --builder repro build -t server --platform linux/arm64 --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave && docker rmi server && docker load -i server.tar && docker run --rm -it server /bin/bash'" >> .bashrc
+echo "alias startnc='docker buildx --builder repro build -t server --platform linux/arm64 --no-cache --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave && docker rmi server && docker load -i server.tar && docker run --rm -it server /bin/bash'" >> .bashrc
 echo "alias eif='docker buildx --builder repro build -t server --platform linux/arm64 --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave && docker load -i server.tar && docker run --rm --platform linux/arm64 -v /var/run/docker.sock:/var/run/docker.sock builder'" >> .bashrc
 echo "alias eifnc='docker buildx --builder repro build -t server --platform linux/arm64 --no-cache --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave && docker load -i server.tar && docker run --rm --platform linux/arm64 -v /var/run/docker.sock:/var/run/docker.sock builder'" >> .bashrc
 
