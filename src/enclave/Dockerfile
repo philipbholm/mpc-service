@@ -4,8 +4,6 @@ ARG SOURCE_DATE_EPOCH
 
 WORKDIR /app
 
-RUN echo "Create a file" > file.txt
-
 COPY --chmod=0644 requirements.txt .
 
 RUN pip install --require-hashes -r requirements.txt && \
