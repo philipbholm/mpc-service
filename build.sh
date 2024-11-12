@@ -45,12 +45,14 @@ enclave_image_sha=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock
 # TODO: Add cleanup
 
 
-# Temporary commands
+# tmp commands
+docker buildx create --driver=docker-container --driver-opt image=moby/buildkit:v0.17.0 --name repro
+
+docker buildx --builder repro build -t server --platform linux/arm64 --no-cache --build-arg SOURCE_DATE_EPOCH=0 --output type=docker,dest=server.tar,rewrite-timestamp=true src/enclave
+
 docker build -t builder --platform linux/arm64 .
 
-docker run --rm -it --platform linux/arm64 -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/workspace builder
-
-nitro-cli build-enclave --docker-uri docker --output-file out.eif
+docker run --rm --platform linux/arm64 -v /var/run/docker.sock:/var/run/docker.sock builder
 
 # Compare differences
 docker save -o remote.tar remote
