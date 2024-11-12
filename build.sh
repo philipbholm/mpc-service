@@ -2,12 +2,12 @@
 
 set -e
 
-# Supported architectures: arm64, amd64
-TARGET_ARCH="arm64"
+TARGET_ARCH=arm64
 
 # TODO:
-# - Make build reproducible on mac without python dependencies 
-# - Add dependecies from pip
+# Add support for amd64 builds 
+# Cleanup
+# Change source date epoch
 
 echo "Preparing builder for enclave image."
 
@@ -41,8 +41,6 @@ EOF
 
 echo "Building enclave image file." 
 enclave_image_sha=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock builder)
-
-# TODO: Add cleanup
 
 
 # tmp commands
