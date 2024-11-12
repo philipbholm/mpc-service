@@ -8,6 +8,7 @@ RUN echo "Create a file" > file.txt
 
 COPY --chmod=0644 requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt && \
+    rm -rf /root/.cache/pip
 
 COPY --chmod=0644 server.py .
