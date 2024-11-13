@@ -10,7 +10,3 @@ RUN pip install --require-hashes -r requirements.txt && \
     rm -rf /root/.cache/pip
 
 COPY --chmod=0644 server.py .
-
-# Remove Windows line endings
-RUN find . -type f -exec sh -c 'cat "$0" | tr -d "\r" > "/tmp/$( basename "$0" )"' {} \; \
-    && mv /tmp/* .
