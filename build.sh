@@ -20,7 +20,7 @@ docker buildx create \
 docker buildx --builder repro \
     build \
     -t server \
-    --platform linux/$TARGET_ARCH \
+    --platform linux/arm64 \
     --no-cache \
     --build-arg SOURCE_DATE_EPOCH=0 \
     --output type=docker,dest=server.tar,rewrite-timestamp=true \
@@ -31,7 +31,7 @@ docker buildx --builder repro \
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 # Build enclave image locally
-docker build -t builder --platform linux/$TARGET_ARCH - <<EOF
+docker build -t builder --platform linux/arm64 - <<EOF
 FROM amazonlinux:2023
 
 RUN dnf install -y jq aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel
