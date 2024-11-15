@@ -19,6 +19,6 @@ COPY --chmod=0644 requirements.txt .
 RUN pip install -r requirements.txt && \
     rm -rf /root/.cache/pip
 
-COPY --chmod=0755 src/main.py start.sh ./
+COPY --chmod=0644 src/main.py .
 
 CMD ["nitriding", "-fqdn", "example.com", "-appcmd", "python main.py", "-debug"]
