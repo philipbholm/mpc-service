@@ -14,7 +14,7 @@ app = Flask(__name__)
 DIAGNOSES_LIST = ["1AVB", "2AVB", "3AVB", "ABQRS", "AFIB", "AFLT", "ALMI", "AMI", "ANEUR", "ASMI", "BIGU", "CLBBB", "CRBBB", "DIG", "EL", "HVOLT", "ILBBB", "ILMI", "IMI", "INJAL", "INJAS", "INJIL", "INJIN", "INJLA", "INVT", "IPLMI", "IPMI", "IRBBB", "ISCAL", "ISCAN", "ISCAS", "ISCIL", "ISCIN", "ISCLA", "ISC_", "IVCD", "LAFB", "LAO/LAE", "LMI", "LNGQT", "LOWT", "LPFB", "LPR", "LVH", "LVOLT", "NDT", "NORM", "NST_", "NT_", "PAC", "PACE", "PMI", "PRC(S)", "PSVT", "PVC", "QWAVE", "RAO/RAE", "RVH", "SARRH", "SBRAD", "SEHYP", "SR", "STACH", "STD_", "STE_", "SVARR", "SVTAC", "TAB_", "TRIGU", "VCLVH", "WPW"]
 
 
-@app.route("/inference", methods=["POST"])
+@app.route("/", methods=["POST"])
 def inference():
     try:
         binary_buffer = io.BytesIO(request.data)
@@ -39,3 +39,7 @@ def inference():
         return jsonify({"error": str(e)}), 500
     finally:
         shutil.rmtree("/tmp/data")
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
