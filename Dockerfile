@@ -9,4 +9,8 @@ COPY --chmod=0644 requirements.txt .
 RUN pip install --require-hashes -r requirements.txt && \
     rm -rf /root/.cache/pip
 
-COPY --chmod=0644 server.py .
+COPY --chmod=0644 src/main.py .
+
+EXPOSE 5000
+
+CMD ["python3", "-m", "flask", "--app", "main.py", "--debug", "run", "--host", "0.0.0.0"]

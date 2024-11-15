@@ -24,7 +24,7 @@ docker buildx --builder repro \
     --no-cache \
     --build-arg SOURCE_DATE_EPOCH=0 \
     --output type=docker,dest=server.tar,rewrite-timestamp=true \
-    src/enclave
+    .
 
 # Enable QEMU if necessary
 # https://github.com/multiarch/qemu-user-static
