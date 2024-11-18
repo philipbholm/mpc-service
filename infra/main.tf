@@ -68,14 +68,12 @@ resource "aws_instance" "mpc_server" {
         # Update user permissions
         sudo usermod -aG ne ec2-user && sudo usermod -aG docker ec2-user
         
-        # Allocate cpu and memory for the enclave
-        # TODO: Make this more user friendly
-        # TODO: Automatically allocate based on the host specification?
-        sudo tee /etc/nitro_enclaves/allocator.yaml <<-EOT
-        ---
-        memory_mib: 3072
-        cpu_count: 1
-        EOT
+        # Allocate resources to enclave 
+        # Leaves 1 vCPU and 1024 GiB RAM for the parent
+        MEMORY_AVAILABLE=$(awk '/MemTotal/ {printf "%d", $2/1024 - 1024}' /proc/meminfo)
+        CPU_AVAILABLE=$(($(nproc) - 1))
+        sudo sed -i "s/^memory_mib:.*/memory_mib: ${MEMORY_AVAILABLE}/" /etc/nitro_enclaves/allocator.yaml
+        sudo sed -i "s/^cpu_count:.*/cpu_count: ${CPU_AVAILABLE}/" /etc/nitro_enclaves/allocator.yaml
         
         # Enable and start services
         sudo systemctl enable --now docker
