@@ -10,4 +10,4 @@ nitro-cli run-enclave \
     --eif-path image.eif \
     --enclave-cid 4 \
     --debug-mode
-nitro-cli console --enclave-id 4 
+nitro-cli console --enclave-id $(nitro-cli describe-enclaves | jq -r ".[0].EnclaveID") 
