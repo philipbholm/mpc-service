@@ -7,3 +7,4 @@ terraform.tfstate*
 example/
 *.tar
 data/
+*.pyc
