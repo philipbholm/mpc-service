@@ -62,27 +62,36 @@ resource "aws_instance" "mpc_server" {
 
   user_data = <<-EOF
         #!/bin/bash
-        # Install Nitro Enclaves CLI
-        sudo dnf -y install aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel
+        # Install dependencies
+        sudo dnf -y install aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel git-all
+
         # Update user permissions
         sudo usermod -aG ne ec2-user && sudo usermod -aG docker ec2-user
+        
         # Allocate cpu and memory for the enclave
         # TODO: Make this more user friendly
+        # TODO: Automatically allocate based on the host specification?
         sudo tee /etc/nitro_enclaves/allocator.yaml <<-EOT
         ---
         memory_mib: 3072
         cpu_count: 1
         EOT
+        
         # Enable and start services
         sudo systemctl enable --now docker
         sudo systemctl enable --now nitro-enclaves-allocator.service
         sudo systemctl enable --now nitro-enclaves-vsock-proxy.service
         
-        # Application dependencies
-        sudo dnf -y install git-all
-        # TODO: Use parent/requirements.txt
-        sudo dnf -y install python3-pip
-        sudo pip3 install boto3==1.33.13
+        # Install gvproxy
+        sudo dnf -y install golang
+        git clone https://github.com/containers/gvisor-tap-vsock.git /home/ec2-user/gvisor-tap-vsock
+        sudo chown -R ec2-user:ec2-user /home/ec2-user/gvisor-tap-vsock
+        cd /home/ec2-user/gvisor-tap-vsock
+        go build -o gvproxy ./cmd/gvproxy
+        sudo mv gvproxy /usr/local/bin
+        cd -
+
+        # Pull enclave code
         git clone https://github.com/philipbholm/mpc-service.git /home/ec2-user/mpc-service
         sudo chown -R ec2-user:ec2-user /home/ec2-user/mpc-service
 
