@@ -12,11 +12,15 @@ def main():
 
     while True:
         conn, addr = sock.accept()
+        print(f"Accepted connection from: {addr}")
         payload = conn.recv(4096)
         request = json.loads(payload.decode())
+        print(f"Received request: {request}")
         # Request attestation doc with nonce
         # Return docs
-        conn.send(str.encode(json.dumps(request)))
+        response = json.dumps(request)
+        print(f"Sending response: {response}")
+        conn.send(str.encode(response))
         conn.close()
 
 
