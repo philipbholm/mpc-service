@@ -10,10 +10,16 @@ def main():
     request = {
         "nonce": secrets.token_hex(16),
     }
-
     sock.send(str.encode(json.dumps(request)))
 
-    print(sock.recv(2048).decode())
+    response = b""
+    while True:
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
+        response += chunk
+    
+    print(response.decode("UTF-8"))
 
     sock.close()
 
