@@ -13,7 +13,10 @@ variable "availability_zone" {
 # Instance options:
 # All 8g series are ARM-based Graviton 4 chips
 # Uses always-on memory encryption, dedicated cache for every vCPU
-# and support for pointer authentication. 
+# and supports Pointer Authentication and Branch Target Identification
+# by default with AL2023
+# https://spectrum.ieee.org/aws-graviton4
+
 # Use 7g series if 8g is not available. 
 # Graviton 2 and up encrypts the DRAM interface. Gravtion 4 also
 # encrypt the interface with the Nitro Cards.
