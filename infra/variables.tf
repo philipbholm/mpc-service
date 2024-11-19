@@ -15,6 +15,8 @@ variable "availability_zone" {
 # Uses always-on memory encryption, dedicated cache for every vCPU
 # and support for pointer authentication. 
 # Use 7g series if 8g is not available. 
+# Graviton 2 and up encrypts the DRAM interface. Gravtion 4 also
+# encrypt the interface with the Nitro Cards.
 
 # M8g series: General purpose workloads
 # m8g.large: 2 vCPU, 8 GiB RAM
