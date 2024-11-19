@@ -23,8 +23,8 @@ sudo systemctl enable --now nitro-enclaves-allocator.service
 sudo systemctl enable --now nitro-enclaves-vsock-proxy.service
 
 # Aliases
-echo "alias stop='nitro-cli terminate-enclave --all'" >> .bashrc
-echo "alias desc='nitro-cli describe-enclaves'" >> .bashrc
+echo "alias stop='nitro-cli terminate-enclave --all'" >> ~/.bashrc
+echo "alias desc='nitro-cli describe-enclaves'" >> ~/.bashrc
 
 # Install tmux 
 sudo dnf install -y tmux 
