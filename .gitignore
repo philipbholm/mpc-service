@@ -8,3 +8,4 @@ example/
 *.tar
 data/
 *.pyc
+attestation-verifier/
