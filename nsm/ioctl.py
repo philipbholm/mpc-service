@@ -17,21 +17,14 @@ DIR_SHIFT = SIZE_SHIFT + SIZE_BITS
 # IOCTL directions
 NONE = 0  # No ioctl direction
 WRITE = 1  # Write ioctl direction
-READ = 2   # Read ioctl direction
+READ = 2  # Read ioctl direction
+
 
 def command(direction: int, typ: int, nr: int, size: int) -> int:
-    """Generate an ioctl command from the supplied arguments.
-    
-    Args:
-        direction: The direction (NONE, WRITE, or READ)
-        typ: The type value
-        nr: The number value
-        size: The size value
-        
-    Returns:
-        The computed ioctl command number
-    """
-    return (((direction) << DIR_SHIFT) |
-            ((typ) << TYPE_SHIFT) |
-            ((nr) << NR_SHIFT) |
-            ((size) << SIZE_SHIFT))
+    """Generate an ioctl command from the supplied arguments."""
+    return (
+        ((direction) << DIR_SHIFT)
+        | ((typ) << TYPE_SHIFT)
+        | ((nr) << NR_SHIFT)
+        | ((size) << SIZE_SHIFT)
+    )

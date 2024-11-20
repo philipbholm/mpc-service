@@ -11,9 +11,11 @@ def main():
         # Test 1: Get basic NSM information
         response = session.send(DescribeNSM())
         if response.describe_nsm:
-            print(f"NSM Version: {response.describe_nsm.version_major}."
-                  f"{response.describe_nsm.version_minor}."
-                  f"{response.describe_nsm.version_patch}")
+            print(
+                f"NSM Version: {response.describe_nsm.version_major}."
+                f"{response.describe_nsm.version_minor}."
+                f"{response.describe_nsm.version_patch}"
+            )
             print(f"Module ID: {response.describe_nsm.module_id}")
             print(f"Max PCRs: {response.describe_nsm.max_pcrs}")
             print(f"Digest type: {response.describe_nsm.digest}")
