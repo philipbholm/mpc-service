@@ -6,7 +6,7 @@ from typing import Optional, Protocol
 
 import cbor2
 
-from . import ioc, request, response
+from . import ioctl, request, response
 
 # Constants
 MAX_REQUEST_SIZE = 0x1000
@@ -102,8 +102,8 @@ class Session:
         msg.response_size = len(response_buffer)
 
         try:
-            cmd = ioc.command(
-                ioc.READ | ioc.WRITE, IOCTL_MAGIC, 0, ctypes.sizeof(IoctlMessage)
+            cmd = ioctl.command(
+                ioctl.READ | ioctl.WRITE, IOCTL_MAGIC, 0, ctypes.sizeof(IoctlMessage)
             )
             fcntl.ioctl(self._fd.fileno(), cmd, msg)
             return bytes(response_buffer[: msg.response_size])

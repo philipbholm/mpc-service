@@ -1,11 +1,13 @@
 FROM python:3.11.10-slim-bookworm
 
+WORKDIR /app
+
 COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-WORKDIR /app
+COPY main.py .
 
-COPY . .
+COPY src ./nsm
 
 CMD ["python", "main.py"]
