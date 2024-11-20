@@ -11,8 +11,8 @@ sudo dnf -y install aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel
 sudo usermod -aG ne ec2-user && sudo usermod -aG docker ec2-user
 
 # Allocate resources to enclave 
-# Leaves 1 vCPU and 1024 GiB RAM for the parent
-MEMORY_AVAILABLE=$(awk '/MemTotal/ {printf "%d", $2/1024 - 1024}' /proc/meminfo)
+# Leaves 1 vCPU and 4096 GiB RAM for the parent
+MEMORY_AVAILABLE=$(awk '/MemTotal/ {printf "%d", $2/4096 - 4096}' /proc/meminfo)
 CPU_AVAILABLE=$(($(nproc) - 1))
 sudo sed -i "s/^memory_mib:.*/memory_mib: ${MEMORY_AVAILABLE}/" /etc/nitro_enclaves/allocator.yaml
 sudo sed -i "s/^cpu_count:.*/cpu_count: ${CPU_AVAILABLE}/" /etc/nitro_enclaves/allocator.yaml
