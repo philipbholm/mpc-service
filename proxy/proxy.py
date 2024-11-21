@@ -77,6 +77,7 @@ class Proxy:
 if __name__ == "__main__":
     proxy = Proxy(8080, 4, 8000)
     try:
+        print(f"[proxy] Proxy listening on port {proxy._listen_port}")
         proxy.start()
     except KeyboardInterrupt:
         print("[proxy] Proxy stopped")
