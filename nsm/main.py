@@ -1,5 +1,5 @@
 from nsm import Session
-from nsm.request import DescribeNSM
+from request import DescribeNSM
 
 
 def main():
