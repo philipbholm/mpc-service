@@ -5,11 +5,14 @@ from nsm.request import DescribeNSM
 def main():
     try:
         # Try to open a session with the NSM device
+        print("Opening NSM session")
         session = Session.open()
         print("Successfully opened NSM session")
 
         # Test 1: Get basic NSM information
+        print("Sending DescribeNSM request")
         response = session.send(DescribeNSM())
+        print("Successfully received DescribeNSM response")
         if response.describe_nsm:
             print(
                 f"NSM Version: {response.describe_nsm.version_major}."
@@ -37,4 +40,6 @@ def main():
 
 
 if __name__ == "__main__":
+    print("Starting main")
     main()
+    print("Main finished")

@@ -69,8 +69,11 @@ class Session:
     """A session used to interact with the NSM."""
 
     def __init__(self, fd: FileDescriptor):
+        print("Initializing session")
         self._fd = fd
+        print("Locking thread")
         self._lock = threading.Lock()
+        print("Session initialized")
 
     @classmethod
     def open(cls) -> "Session":
