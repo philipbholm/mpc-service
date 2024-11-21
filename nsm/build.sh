@@ -2,6 +2,12 @@
 
 set -e 
 
+error_handler() {
+    echo "Error occurred in script at line $1"
+    exit 1
+}
+trap 'error_handler $LINENO' ERR
+
 docker build -t nsm . > /dev/null 2>&1
 nitro-cli build-enclave --docker-uri nsm --output-file out.eif > /dev/null 2>&1
 nitro-cli run-enclave \
