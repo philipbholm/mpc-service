@@ -5,8 +5,9 @@ import threading
 from typing import Optional, Protocol
 
 import cbor2
-
-from . import ioctl, request, response
+import ioctl
+import request
+import response
 
 # Constants
 MAX_REQUEST_SIZE = 0x1000
