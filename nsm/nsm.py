@@ -124,18 +124,7 @@ class Session:
             return response.Response.from_cbor(response_data)
 
     def read(self, buffer: bytearray) -> int:
-        """Read entropy from the NSM device.
-
-        Args:
-            buffer: Buffer to fill with random data
-
-        Returns:
-            Number of bytes read
-
-        Raises:
-            GetRandomFailed: If the random data request fails
-            SessionClosed: If the session is closed
-        """
+        """Read entropy from the NSM device."""
         get_random = request.GetRandom()
         remaining = len(buffer)
         total_read = 0
