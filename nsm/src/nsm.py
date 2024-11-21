@@ -79,7 +79,9 @@ class Session:
     def open(cls) -> "Session":
         """Open a new session using the default NSM device."""
         try:
+            print("Opening NSM device")
             fd = os.open("/dev/nsm", os.O_RDWR)
+            print("Successfully opened NSM device")
             return cls(os.fdopen(fd, "rb+"))
         except OSError as e:
             raise OSError(f"Failed to open NSM device: {e}")
