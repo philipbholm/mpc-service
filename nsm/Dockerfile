@@ -10,4 +10,4 @@ COPY main.py .
 
 COPY src ./nsm
 
-CMD ["python", "main.py"]
+CMD ["usr/local/bin/python", "main.py"]
