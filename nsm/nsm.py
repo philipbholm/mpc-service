@@ -80,12 +80,12 @@ class Session:
     def open(cls) -> "Session":
         """Open a new session using the default NSM device."""
         try:
-            print("Opening NSM device")
+            print("[nsm.open] Opening fd for NSM device")
             fd = os.open("/dev/nsm", os.O_RDWR)
-            print("Successfully opened NSM device")
+            print("[nsm.open] Successfully opened NSM device")
             return cls(os.fdopen(fd, "r"))
         except OSError as e:
-            raise OSError(f"Failed to open NSM device: {e}")
+            raise OSError(f"[nsm.open] Failed to open NSM device: {e}")
 
     def close(self) -> None:
         """Close this session."""
@@ -96,31 +96,41 @@ class Session:
 
     def _send(self, request_data: bytes) -> bytes:
         """Send raw request data to NSM and receive response."""
+        print(f"[nsm._send] Received input: {request_data.hex()}")
         if self._fd is None:
             raise SessionClosed()
 
+        print("[nsm._send] Allocating response buffer")
         response_buffer = bytearray(MAX_RESPONSE_SIZE)
 
         msg = IoctlMessage()
+        print("[nsm._send] Casting request data")
         msg.request = ctypes.cast(request_data, ctypes.c_void_p)
         msg.request_size = len(request_data)
         msg.response = ctypes.cast(response_buffer, ctypes.c_void_p)
         msg.response_size = len(response_buffer)
+        print(f"[nsm._send] ioctl message: {msg}")
 
         try:
             cmd = ioctl.command(
                 ioctl.READ | ioctl.WRITE, IOCTL_MAGIC, 0, ctypes.sizeof(IoctlMessage)
             )
+            print(f"[nsm._send] ioctl command: {cmd}")
             fcntl.ioctl(self._fd.fileno(), cmd, msg)
+            print(f"[nsm._send] ioctl returned: {msg}")
             return bytes(response_buffer[: msg.response_size])
         except OSError as e:
+            print(f"[nsm._send] ioctl failed: {e}")
             raise IoctlFailed(e.errno)
 
     def send(self, req: request.Request) -> response.Response:
         """Send an NSM request and await its response."""
         with self._lock:
+            print(f"[nsm.send] Dumping request to CBOR: {req.encoded()}")
             request_data = cbor2.dumps(req.encoded())
+            print(f"[nsm.send] Sending request data: {request_data.hex()}")
             response_data = self._send(request_data)
+            print(f"[nsm.send] Received response data: {response_data.hex()}")
             return response.Response.from_cbor(response_data)
 
     def read(self, buffer: bytearray) -> int:
