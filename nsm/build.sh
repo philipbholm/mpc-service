@@ -2,12 +2,12 @@
 
 set -e 
 
-docker build -t nsm .
-nitro-cli build-enclave --docker-uri nsm --output-file nsm.eif
+docker build -t nsm . > /dev/null 2>&1
+nitro-cli build-enclave --docker-uri nsm --output-file out.eif > /dev/null 2>&1
 nitro-cli run-enclave \
     --cpu-count 1 \
     --memory 8000 \
-    --eif-path nsm.eif \
+    --eif-path out.eif \
     --enclave-cid 4 \
-    --debug-mode
+    --debug-mode > /dev/null 2>&1
 nitro-cli console --enclave-id $(nitro-cli describe-enclaves | jq -r ".[0].EnclaveID") 
