@@ -17,7 +17,7 @@ PORT = 8000
 
 
 def _read_nsm_random_bytes(num_bytes):
-    with open("/dev/nsm", "r") as nsm:
+    with open("/dev/nsm", "rb") as nsm:
         print(f"[enclave] Successfully opened NSM device")
         random_bytes = nsm.read(num_bytes)
         print(f"[enclave] Read {len(random_bytes)} bytes from NSM device")
