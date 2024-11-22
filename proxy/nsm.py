@@ -34,15 +34,18 @@ class NSMSession:
     def _send(self, request):
         response_buffer = bytearray(MAX_RESPONSE_SIZE)
         
-        request_iovec = struct.pack("QQ", id(request), len(request))
-        print(f"[nsm] request_iovec: {request_iovec}")
-        response_iovec = struct.pack("QQ", id(response_buffer), len(response_buffer))
-        print(f"[nsm] response_iovec: {response_iovec}")
-
-        ioctl_msg = request_iovec + response_iovec
+        iov_format = "QQQQ"  # Two pairs of uint64 for (addr, len)
+        ioctl_msg = struct.pack(
+            iov_format,
+            id(request),
+            len(request),
+            id(response_buffer),
+            len(response_buffer)
+        )
+    
+        # Using _IOC(3, IOCTL_MAGIC, 0, sizeof(struct iovec) * 2)
+        ioctl_cmd = (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (len(ioctl_msg) << 16)
         print(f"[nsm] ioctl_msg: {ioctl_msg}")
-
-        ioctl_cmd = (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (struct.calcsize(ioctl_msg) << 16)
         print(f"[nsm] ioctl_cmd: {ioctl_cmd}")
 
         try:
