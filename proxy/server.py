@@ -1,56 +1,104 @@
+import datetime
+import os
 import socket
-import sys
+import ssl
 
-# VSOCK constants
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.x509.oid import NameOID
+
 PORT = 8000
-AF_VSOCK = 40
+
+# TODO: Update SSL context settings
+# TODO: Use private key to sign cert and make nsm sign the public key or certificate
+# TODO: Add error / context handling
+# TODO: Make multithreaded
 
 
-def start_server(port):
-    # Create VSOCK socket
-    server_socket = socket.socket(AF_VSOCK, socket.SOCK_STREAM)
+def _read_nsm_random_bytes(num_bytes):
+    with open("/dev/nsm", "r") as nsm:
+        nsm.seek(0)
+        return nsm.read(num_bytes)
 
-    try:
-        # Bind to port and listen for any CID
-        server_socket.bind((socket.VMADDR_CID_ANY, port))
-        server_socket.listen(1)
-        print(f"[enclave] Server listening on VSOCK port {port}")
 
+class Server:
+    def __init__(self, port: int):
+        self.port = port
+        self.server_socket = None
+        self._key_path = "enclave.key"
+        self._cert_path = "enclave.pem"
+        self._generate_key_and_certificate()
+        self._ssl_context = self._setup_ssl_context()
+
+    def start(self):
+        self.server_socket = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+        self.server_socket.bind((socket.VMADDR_CID_ANY, self.port))
+        self.server_socket.listen(1)
+        print(f"[enclave] Server listening on port {self.port}")
         while True:
-            # Accept incoming connection
-            client_socket, client_address = server_socket.accept()
+            client_socket, client_address = self.server_socket.accept()
             print(f"[enclave] Accepted connection from CID: {client_address[0]}")
-
+            secure_socket = self._ssl_context.wrap_socket(
+                client_socket, server_side=True
+            )
+            print(f"[enclave] Secure socket created: {secure_socket}")
             try:
-                # Receive and print data
                 while True:
-                    data = client_socket.recv(4096)
+                    data = secure_socket.recv(4096)
                     if not data:
                         break
-
-                    # Decode and print the received data
                     print(f"[enclave] Received: {data.decode('utf-8')}")
-
-                    # Echo back to client
-                    client_socket.sendall(b"Message received by enclave\n")
-
+                    secure_socket.sendall(b"Message received by enclave\n")
             except Exception as e:
                 print(f"[enclave] Error handling client: {e}")
             finally:
-                client_socket.close()
+                secure_socket.close()
                 print("[enclave] Client connection closed")
 
-    except Exception as e:
-        print(f"[enclave] Server error: {e}")
-        sys.exit(1)
-    finally:
-        server_socket.close()
+    def _generate_key_and_certificate(self):
+        random_bytes_needed = (521 // 8) * 2
+        random_bytes = _read_nsm_random_bytes(random_bytes_needed)
+        print(f"[enclave] Generated random bytes: {random_bytes_needed}")
+        os.urandom = lambda size: random_bytes[:size]
+        private_key = ec.generate_private_key(ec.SECP521R1())
+
+        subject = issuer = x509.Name(
+            [x509.NameAttribute(NameOID.COMMON_NAME, "enclave")]
+        )
+        certificate = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(issuer)
+            .public_key(private_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.datetime.utcnow())
+            .not_valid_after(datetime.datetime.utcnow() + datetime.timedelta(days=10))
+            .sign(private_key, hashes.SHA256())
+        )
+
+        with open(self._cert_path, "wb") as cert_file:
+            cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
+        with open(self._key_path, "wb") as key_file:
+            key_file.write(
+                private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption(),
+                )
+            )
+
+    def _setup_ssl_context(self):
+        ssl_context = ssl.create_default_context()
+        ssl_context.load_cert_chain(certfile=self._cert_path, keyfile=self._key_path)
+        return ssl_context
 
 
 if __name__ == "__main__":
+    server = Server(PORT)
     try:
-        start_server(PORT)
+        server.start()
     except KeyboardInterrupt:
         print("[enclave] Server stopped")
     except Exception as e:
-        print(f"[enclave] Failed to start server: {e}")
+        print(f"[enclave] Unexpected error: {e}")
