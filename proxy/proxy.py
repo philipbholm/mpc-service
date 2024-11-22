@@ -3,6 +3,10 @@ import socket
 import sys
 import threading
 
+LISTEN_PORT = 8443
+FORWARD_CID = 4
+FORWARD_PORT = 8000
+
 
 class Proxy:
     def __init__(self, listen_port: int, forward_cid: int, forward_port: int):
@@ -16,9 +20,11 @@ class Proxy:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server_socket.bind(("0.0.0.0", self._listen_port))
             self.server_socket.listen(50)
+            print(f"[proxy] Proxy listening on port {self._listen_port}")
             while True:
                 try:
                     client_socket, client_address = self.server_socket.accept()
+                    print(f"[proxy] Accepted connection from {client_address}")
                     client_handler = threading.Thread(
                         target=self._handle_client, args=(client_socket, client_address)
                     )
@@ -37,6 +43,7 @@ class Proxy:
         try:
             forward_socket = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
             forward_socket.connect((self._forward_cid, self._forward_port))
+            print(f"[proxy] Forwarding to {self._forward_cid}:{self._forward_port}")
             client_to_server = threading.Thread(
                 target=self._forward_data, args=(client_socket, forward_socket)
             )
@@ -61,21 +68,24 @@ class Proxy:
                 print(f"[proxy] Failed to close forward socket: {e}")
 
     def _forward_data(self, source: socket.socket, destination: socket.socket):
+        print(f"[proxy] Forwarding data from {source} to {destination}")
         try:
             while True:
                 readable, _, _ = select.select([source], [], [], 1)
                 if not readable:
                     break
                 data = source.recv(4096)
+                print(f"[proxy] Received data from {source}: {data}")
                 if not data:
                     break
                 destination.sendall(data)
+                print(f"[proxy] Sent data to {destination}: {data}")
         except Exception as e:
             print(f"[proxy] Failed to forward data from {source} to {destination}: {e}")
 
 
 if __name__ == "__main__":
-    proxy = Proxy(8080, 4, 8000)
+    proxy = Proxy(LISTEN_PORT, FORWARD_CID, FORWARD_PORT)
     try:
         print(f"[proxy] Proxy listening on port {proxy._listen_port}")
         proxy.start()
