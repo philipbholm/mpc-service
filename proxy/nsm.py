@@ -51,7 +51,7 @@ class NSMSession:
         try:
             print(f"[nsm] trying to call ioctl")
             fcntl.ioctl(self.fd, ioctl_cmd, ioctl_msg)
-            response_size = struct.unpack("QQ", ioctl_msg[16:32])[1]
+            response_size = struct.unpack(iov_format, ioctl_msg)[3]
             return bytes(response_buffer[:response_size])
         except Exception as e:
             print(f"[nsm] _send failed: {e}")
