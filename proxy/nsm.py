@@ -1,0 +1,65 @@
+import os
+import fcntl
+import struct
+import cbor2
+
+MAX_REQUEST_SIZE = 0x1000
+MAX_RESPONSE_SIZE = 0x3000
+IOCTL_MAGIC = 0x0A
+
+class NSMSession:
+    def __init__(self):
+        self.fd = None
+
+    def __enter__(self):
+        self.open()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+    
+    def open(self):
+        if self.fd is None:
+            try:
+                self.fd = os.open("/dev/nsm", os.O_RDWR)
+            except OSError as e:
+                raise Exception(f"Failed to open NSM device: {e}")
+        return self
+    
+    def close(self):
+        if self.fd is not None:
+            os.close(self.fd)
+            self.fd = None
+    
+    def _send(self, request):
+        response_buffer = bytearray(MAX_RESPONSE_SIZE)
+        
+        request_iovec = struct.pack("QQ", id(request), len(request))
+        print(f"[nsm] request_iovec: {request_iovec}")
+        response_iovec = struct.pack("QQ", id(response_buffer), len(response_buffer))
+        print(f"[nsm] response_iovec: {response_iovec}")
+
+        ioctl_msg = request_iovec + response_iovec
+        print(f"[nsm] ioctl_msg: {ioctl_msg}")
+
+        ioctl_cmd = (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (struct.calcsize(ioctl_msg) << 16)
+        print(f"[nsm] ioctl_cmd: {ioctl_cmd}")
+
+        try:
+            print(f"[nsm] trying to call ioctl")
+            fcntl.ioctl(self.fd, ioctl_cmd, ioctl_msg)
+            response_size = struct.unpack("QQ", ioctl_msg[16:32])[1]
+            return bytes(response_buffer[:response_size])
+        except Exception as e:
+            print(f"[nsm] _send failed: {e}")
+            raise e
+
+    def get_random_bytes(self, length):
+        request = cbor2.dumps({"GetRandom": {}})
+        print(f"[nsm] get_random_bytes request: {request}")
+        response_data = self._send(request)
+        print(f"[nsm] get_random_bytes response_data: {response_data}")
+        response = cbor2.loads(response_data)
+        print(f"[nsm] get_random_bytes response: {response}")
+        return response
+        

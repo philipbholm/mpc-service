@@ -6,6 +6,6 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-COPY server.py .
+COPY server.py nsm.py ./
 
 CMD ["/usr/local/bin/python3", "/app/server.py"]

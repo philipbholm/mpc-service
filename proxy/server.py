@@ -8,20 +8,14 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import NameOID
 
+from nsm import NSMSession
+
 PORT = 8000
 
 # TODO: Update SSL context settings
 # TODO: Use private key to sign cert and make nsm sign the public key or certificate
 # TODO: Add error / context handling
 # TODO: Make multithreaded
-
-
-def _read_nsm_random_bytes(num_bytes):
-    with open("/dev/nsm", "rb") as nsm:
-        print(f"[enclave] Successfully opened NSM device")
-        random_bytes = nsm.read(num_bytes)
-        print(f"[enclave] Read {len(random_bytes)} bytes from NSM device")
-        return random_bytes
 
 
 class Server:
@@ -60,9 +54,10 @@ class Server:
 
     def _generate_key_and_certificate(self):
         print("[enclave] Generating key and certificate")
-        random_bytes_needed = (521 // 8) * 2
-        random_bytes = _read_nsm_random_bytes(random_bytes_needed)
-        print(f"[enclave] Generated random bytes: {random_bytes_needed}")
+        print("[enclave] Creating NSM session")
+        with NSMSession() as nsm:
+            random_bytes = nsm.get_random_bytes(521 // 8 * 2)
+        print(f"[enclave] Generated random bytes from nsm: {random_bytes}")
         os.urandom = lambda size: random_bytes[:size]
         private_key = ec.generate_private_key(ec.SECP521R1())
 
