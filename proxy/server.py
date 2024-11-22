@@ -18,8 +18,12 @@ PORT = 8000
 
 def _read_nsm_random_bytes(num_bytes):
     with open("/dev/nsm", "r") as nsm:
+        print(f"[enclave] Successfully opened NSM device")
         nsm.seek(0)
-        return nsm.read(num_bytes)
+        print(f"[enclave] Seeking to start of NSM device")
+        random_bytes = nsm.read(num_bytes)
+        print(f"[enclave] Read {len(random_bytes)} bytes from NSM device")
+        return random_bytes
 
 
 class Server:
@@ -57,6 +61,7 @@ class Server:
                 print("[enclave] Client connection closed")
 
     def _generate_key_and_certificate(self):
+        print("[enclave] Generating key and certificate")
         random_bytes_needed = (521 // 8) * 2
         random_bytes = _read_nsm_random_bytes(random_bytes_needed)
         print(f"[enclave] Generated random bytes: {random_bytes_needed}")
@@ -95,6 +100,7 @@ class Server:
 
 
 if __name__ == "__main__":
+    print("[enclave] Starting server")
     server = Server(PORT)
     try:
         server.start()
