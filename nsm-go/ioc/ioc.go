@@ -5,6 +5,10 @@
 // * https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/ioctl.h
 package ioc
 
+import (
+	"fmt"
+)
+
 const (
 	cNRBITS    uint = 8
 	cTYPEBITS  uint = 8
@@ -31,8 +35,14 @@ const (
 
 // Command generates an ioctl command from the supplied arguments.
 func Command(dir, typ, nr, size uint) uint {
-	return (((dir) << cDIRSHIFT) |
+	fmt.Printf("[ioc] Command input: dir: %d, typ: %d, nr: %d, size: %d\n", dir, typ, nr, size)
+
+	result := (((dir) << cDIRSHIFT) |
 		((typ) << cTYPESHIFT) |
 		((nr) << cNRSHIFT) |
 		((size) << cSIZESHIFT))
+
+	fmt.Printf("[ioc] Command output: %d\n", result)
+
+	return result
 }
