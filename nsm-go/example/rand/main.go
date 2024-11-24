@@ -15,7 +15,7 @@ func generateBigPrime() (*big.Int, error) {
         return nil, err
     }
 
-    return rand.Prime(sess, 2048)
+    return rand.Prime(sess, 512)
 }
 
 func main() {
