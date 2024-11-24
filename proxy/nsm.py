@@ -3,21 +3,22 @@ import fcntl
 import struct
 import cbor2
 import ctypes
+
 MAX_REQUEST_SIZE = 0x1000
 MAX_RESPONSE_SIZE = 0x3000
 IOCTL_MAGIC = 0x0A
 
+
 class Iovec(ctypes.Structure):
     _fields_ = [
         ("base", ctypes.c_uint64),  # pointer to buffer
-        ("len", ctypes.c_uint64)    # length of buffer
+        ("len", ctypes.c_uint64),  # length of buffer
     ]
 
+
 class IoctlMessage(ctypes.Structure):
-    _fields_ = [
-        ("request", Iovec),
-        ("response", Iovec)
-    ]
+    _fields_ = [("request", Iovec), ("response", Iovec)]
+
 
 class NSMSession:
     def __init__(self):
@@ -26,10 +27,10 @@ class NSMSession:
     def __enter__(self):
         self.open()
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-    
+
     def open(self):
         if self.fd is None:
             try:
@@ -37,21 +38,23 @@ class NSMSession:
             except OSError as e:
                 raise Exception(f"Failed to open NSM device: {e}")
         return self
-    
+
     def close(self):
         if self.fd is not None:
             os.close(self.fd)
             self.fd = None
-    
+
     def _send(self, request):
-        request_bytes = bytes(request)
-        response_buffer = bytearray(MAX_RESPONSE_SIZE)
-        
+        self._request_bytes = bytes(request)
+        self._response_buffer = bytearray(MAX_RESPONSE_SIZE)
+
         ioctl_msg = IoctlMessage(
-            request=Iovec(base=id(request_bytes), len=len(request_bytes)),
-            response=Iovec(base=id(response_buffer), len=len(response_buffer))
+            request=Iovec(base=id(self._request_bytes), len=len(self._request_bytes)),
+            response=Iovec(
+                base=id(self._response_buffer), len=len(self._response_buffer)
+            ),
         )
-    
+
         # Using _IOC(3, IOCTL_MAGIC, 0, sizeof(struct iovec) * 2)
         # [ioc] Command input: dir: 3, typ: 10, nr: 0, size: 32
         # [ioc] Command output: 3223325184
@@ -66,7 +69,7 @@ class NSMSession:
             # print(f"[nsm] ioctl_msg unpacked after ioctl: {struct.unpack('QQQQ', ioctl_msg)}")
             response_size = ioctl_msg.response.len
             print(f"[nsm] response size: {response_size}")
-            result = bytes(response_buffer[:response_size])
+            result = bytes(self._response_buffer[:response_size])
             print(f"[nsm] result: {result}")
             return result
         except Exception as e:
