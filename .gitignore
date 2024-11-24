@@ -5,6 +5,7 @@
 terraform.tfstate*
 *.eif
 example/
+!nsm-go/example
 *.tar
 data/
 *.pyc
