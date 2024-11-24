@@ -212,6 +212,8 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 		return res, err
 	}
 
+	fmt.Printf("[nsm] sendMarshaled response: %v\n", res)
+
 	return res, nil
 }
 
@@ -222,13 +224,18 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 // and Read call reserves at most 16KB of memory, so having multiple parallel
 // sends or reads might lead to increased memory usage.
 func (sess *Session) Read(into []byte) (int, error) {
+	fmt.Printf("[nsm] Read request size: %d\n", len(into))
 	reqb := sess.reqpool.Get().(*bytes.Buffer)
+	fmt.Printf("[nsm] reqb: %v\n", reqb.String())
 	defer sess.reqpool.Put(reqb)
 
 	getRandom := request.GetRandom{}
+	fmt.Printf("[nsm] getRandom: %v\n", getRandom)
+	fmt.Printf("[nsm] getRandom.Encoded(): %v\n", getRandom.Encoded())
 
 	reqb.Reset()
 	encoder := cbor.NewEncoder(reqb)
+	fmt.Printf("[nsm] encoder: %v\n", encoder)
 	err := encoder.Encode(getRandom.Encoded())
 	if nil != err {
 		return 0, err
@@ -252,6 +259,7 @@ func (sess *Session) Read(into []byte) (int, error) {
 
 		i += copy(into[i:], res.GetRandom.Random)
 	}
+	fmt.Printf("[nsm] Read response: %v\n", into)
 
 	return len(into), nil
 }
