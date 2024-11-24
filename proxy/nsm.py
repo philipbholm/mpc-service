@@ -53,7 +53,7 @@ class NSMSession:
 
         try:
             print("[nsm] trying to call ioctl")
-            fcntl.ioctl(self.fd, ioctl_cmd, ioctl_msg, mutate_flag=True)
+            fcntl.ioctl(self.fd, ioctl_cmd, ioctl_msg)
             print(f"[nsm] ioctl_msg unpacked after ioctl: {struct.unpack('QQQQ', ioctl_msg)}")
             response_size = struct.unpack("QQQQ", ioctl_msg)[3]
             print("[nsm] before creating result")
