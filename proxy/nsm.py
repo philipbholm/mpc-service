@@ -2,10 +2,22 @@ import os
 import fcntl
 import struct
 import cbor2
-
+import ctypes
 MAX_REQUEST_SIZE = 0x1000
 MAX_RESPONSE_SIZE = 0x3000
 IOCTL_MAGIC = 0x0A
+
+class Iovec(ctypes.Structure):
+    _fields_ = [
+        ("base", ctypes.c_uint64),  # pointer to buffer
+        ("len", ctypes.c_uint64)    # length of buffer
+    ]
+
+class IoctlMessage(ctypes.Structure):
+    _fields_ = [
+        ("request", Iovec),
+        ("response", Iovec)
+    ]
 
 class NSMSession:
     def __init__(self):
@@ -32,14 +44,12 @@ class NSMSession:
             self.fd = None
     
     def _send(self, request):
+        request_bytes = bytes(request)
         response_buffer = bytearray(MAX_RESPONSE_SIZE)
         
-        ioctl_msg = struct.pack(
-            "QQQQ",
-            id(request),
-            len(request),
-            id(response_buffer),
-            len(response_buffer)
+        ioctl_msg = IoctlMessage(
+            request=Iovec(base=id(request_bytes), len=len(request_bytes)),
+            response=Iovec(base=id(response_buffer), len=len(response_buffer))
         )
     
         # Using _IOC(3, IOCTL_MAGIC, 0, sizeof(struct iovec) * 2)
@@ -47,15 +57,14 @@ class NSMSession:
         # [ioc] Command output: 3223325184
         # ioctl_cmd = (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (len(ioctl_msg) << 16)
         ioctl_cmd = 3223325184
-        print(f"[nsm] ioctl_msg: {ioctl_msg}")
-        print(f"[nsm] ioctl_msg unpacked before ioctl: {struct.unpack('QQQQ', ioctl_msg)}")
-        print(f"[nsm] ioctl_cmd: {ioctl_cmd}")
+        # print(f"[nsm] ioctl_msg unpacked before ioctl: {struct.unpack('QQQQ', ioctl_msg)}")
+        # print(f"[nsm] ioctl_cmd: {ioctl_cmd}")
 
         try:
-            print("[nsm] trying to call ioctl")
+            print(f"[nsm] ioctl_msg: {ioctl_msg}")
             fcntl.ioctl(self.fd, ioctl_cmd, ioctl_msg)
-            print(f"[nsm] ioctl_msg unpacked after ioctl: {struct.unpack('QQQQ', ioctl_msg)}")
-            response_size = struct.unpack("QQQQ", ioctl_msg)[3]
+            # print(f"[nsm] ioctl_msg unpacked after ioctl: {struct.unpack('QQQQ', ioctl_msg)}")
+            response_size = ioctl_msg.response.len
             print(f"[nsm] response size: {response_size}")
             result = bytes(response_buffer[:response_size])
             print(f"[nsm] result: {result}")
