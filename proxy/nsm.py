@@ -34,9 +34,8 @@ class NSMSession:
     def _send(self, request):
         response_buffer = bytearray(MAX_RESPONSE_SIZE)
         
-        iov_format = "QQQQ"  # Two pairs of uint64 for (addr, len)
         ioctl_msg = struct.pack(
-            iov_format,
+            "QQQQ",
             id(request),
             len(request),
             id(response_buffer),
@@ -46,25 +45,29 @@ class NSMSession:
         # Using _IOC(3, IOCTL_MAGIC, 0, sizeof(struct iovec) * 2)
         # [ioc] Command input: dir: 3, typ: 10, nr: 0, size: 32
         # [ioc] Command output: 3223325184
-        ioctl_cmd = (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (len(ioctl_msg) << 16)
+        # ioctl_cmd = (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (len(ioctl_msg) << 16)
+        ioctl_cmd = 3223325184
         print(f"[nsm] ioctl_msg: {ioctl_msg}")
+        print(f"[nsm] ioctl_msg unpacked before ioctl: {struct.unpack('QQQQ', ioctl_msg)}")
         print(f"[nsm] ioctl_cmd: {ioctl_cmd}")
 
         try:
-            print("[nsm] trying to call ioctl")
+            print(f"[nsm] trying to call ioctl")
             fcntl.ioctl(self.fd, ioctl_cmd, ioctl_msg)
-            response_size = struct.unpack(iov_format, ioctl_msg)[3]
-            return bytes(response_buffer[:response_size])
+            print(f"[nsm] ioctl_msg unpacked after ioctl: {struct.unpack('QQQQ', ioctl_msg)}")
+            response_size = struct.unpack("QQQQ", ioctl_msg)[3]
+            result = bytes(response_buffer[:response_size])
+            print(f"[nsm] result: {result}")
+            return result
         except Exception as e:
             print(f"[nsm] _send failed: {e}")
             raise e
 
     def get_random_bytes(self, length):
-        request = cbor2.dumps({"GetRandom": {}})
+        request = cbor2.dumps("GetRandom")
         print(f"[nsm] get_random_bytes request: {request}")
         response_data = self._send(request)
         print(f"[nsm] get_random_bytes response_data: {response_data}")
         response = cbor2.loads(response_data)
         print(f"[nsm] get_random_bytes response: {response}")
         return response
-        
