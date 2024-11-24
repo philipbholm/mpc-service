@@ -1,13 +1,19 @@
 FROM golang:1.17.2-buster
 
-WORKDIR /build
+WORKDIR /
 
-COPY . .
+RUN mkdir -p source
+
+COPY . ./source/
+
+WORKDIR source/example/rand
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o enclave main.go
 
 FROM scratch
 
-COPY --from=0 /build/enclave ./
+WORKDIR /
+
+COPY --from=0 /source/example/rand/enclave ./
 
 CMD ["/enclave"]
