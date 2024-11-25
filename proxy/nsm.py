@@ -57,6 +57,7 @@ class NSMSession:
 
         # Using _IOC(3, IOCTL_MAGIC, 0, sizeof(struct iovec) * 2)
         # [ioc] Command input: dir: 3, typ: 10, nr: 0, size: 32
+        # [ioc] cDIRSHIFT: 30, cTYPESHIFT: 8, cNRSHIFT: 0, cSIZESHIFT: 16
         # [ioc] Command output: 3223325184
         # ioctl_cmd = (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (len(ioctl_msg) << 16)
         ioctl_cmd = 3223325184
