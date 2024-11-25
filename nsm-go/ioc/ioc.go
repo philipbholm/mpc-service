@@ -37,6 +37,8 @@ const (
 func Command(dir, typ, nr, size uint) uint {
 	fmt.Printf("[ioc] Command input: dir: %d, typ: %d, nr: %d, size: %d\n", dir, typ, nr, size)
 
+	fmt.Printf("[ioc] cDIRSHIFT: %d, cTYPESHIFT: %d, cNRSHIFT: %d, cSIZESHIFT: %d\n", cDIRSHIFT, cTYPESHIFT, cNRSHIFT, cSIZESHIFT)
+
 	result := (((dir) << cDIRSHIFT) |
 		((typ) << cTYPESHIFT) |
 		((nr) << cNRSHIFT) |

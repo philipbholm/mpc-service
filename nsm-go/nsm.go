@@ -97,6 +97,10 @@ type ioctlMessage struct {
 }
 
 func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
+	fmt.Printf("[nsm, send] request: %v\n", req)
+	fmt.Printf("[nsm, send] request len: %d\n", len(req))
+	fmt.Printf("[nsm, send] response: %v\n", res)
+	fmt.Printf("[nsm, send] response len: %d\n", len(res))
 	iovecReq := syscall.Iovec{
 		Base: &req[0],
 	}
@@ -111,7 +115,9 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 		Request:  iovecReq,
 		Response: iovecRes,
 	}
-
+	fmt.Printf("[nsm, send] msg: %v\n", msg)
+	fmt.Printf("[nsm, send] msg size: %d\n", unsafe.Sizeof(msg))
+	
 	_, _, err := options.Syscall(
 		syscall.SYS_IOCTL,
 		fd,
@@ -212,7 +218,11 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 		return res, err
 	}
 
-	fmt.Printf("[nsm] sendMarshaled response: %v\n", res)
+	if res.GetRandom != nil {
+		fmt.Printf("[nsm, sendMarshaled] GetRandom response: %v\n", res.GetRandom)
+	} else {
+		fmt.Println("[nsm, sendMarshaled] GetRandom response is nil")
+	}
 
 	return res, nil
 }
@@ -245,6 +255,8 @@ func (sess *Session) Read(into []byte) (int, error) {
 	defer sess.respool.Put(resb)
 
 	for i := 0; i < len(into); i += 0 {
+		fmt.Printf("[nsm] loop %d\n", i)
+		fmt.Printf("[nsm] sendMarshaled request: %v\n", reqb.Bytes())
 		res, err := sess.sendMarshaled(reqb, resb)
 
 		if nil != err {
