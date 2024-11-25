@@ -216,8 +216,11 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 	if nil == sess.fd {
 		return res, errors.New("Session is closed")
 	}
-	fmt.Printf("[nsm, sendMarshaled] reqb: %v\n", reqb.Bytes())
+	// [nsm, sendMarshaled] reqb: [105 71 101 116 82 97 110 100 111 109]
+	// fmt.Printf("[nsm, sendMarshaled] reqb: %v\n", reqb.Bytes())
+	fmt.Printf("[nsm, sendMarshaled] before send resb: %v\n", resb[:20])
 	resb, err := send(sess.options, sess.fd.Fd(), reqb.Bytes(), resb)
+	fmt.Printf("[nsm, sendMarshaled] after send resb: %v\n", resb[:20])
 	if nil != err {
 		return res, err
 	}
@@ -243,18 +246,22 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 // and Read call reserves at most 16KB of memory, so having multiple parallel
 // sends or reads might lead to increased memory usage.
 func (sess *Session) Read(into []byte) (int, error) {
-	fmt.Printf("[nsm, Read] request size: %d\n", len(into))
+	// [nsm, Read] request size: 64
+	// fmt.Printf("[nsm, Read] request size: %d\n", len(into))
 	reqb := sess.reqpool.Get().(*bytes.Buffer)
-	fmt.Printf("[nsm, Read] reqb: %v\n", reqb.String())
+	// [nsm, Read] reqb: iGetRandom
+	// fmt.Printf("[nsm, Read] reqb: %v\n", reqb.String())
 	defer sess.reqpool.Put(reqb)
 
 	getRandom := request.GetRandom{}
-	fmt.Printf("[nsm, Read] getRandom.Encoded(): %v\n", getRandom.Encoded())
+	// [nsm, Read] getRandom.Encoded(): GetRandom
+	// fmt.Printf("[nsm, Read] getRandom.Encoded(): %v\n", getRandom.Encoded())
 
 	reqb.Reset()
 	encoder := cbor.NewEncoder(reqb)
 	err := encoder.Encode(getRandom.Encoded())
-	fmt.Printf("[nsm, Read] reqb after encoding: %v\n", reqb.Bytes())
+	// [nsm, Read] reqb after encoding: [105 71 101 116 82 97 110 100 111 109]
+	// fmt.Printf("[nsm, Read] reqb after encoding: %v\n", reqb.Bytes())
 	if nil != err {
 		return 0, err
 	}
@@ -283,6 +290,8 @@ func (sess *Session) Read(into []byte) (int, error) {
 		fmt.Printf("[nsm, Read] after copy(into[i:], res.GetRandom.Random): %v\n", into)
 		j++
 	}
+
+	fmt.Println("[nsm, Read] returning function")
 
 	return len(into), nil
 }
