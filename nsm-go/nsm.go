@@ -99,7 +99,8 @@ type ioctlMessage struct {
 func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 	fmt.Printf("[nsm, send] request: %v\n", req)
 	fmt.Printf("[nsm, send] request len: %d\n", len(req))
-	fmt.Printf("[nsm, send] response: %v\n", res)
+	// Response contains 278 random bytes and then zeros until 12288 (maxResponseSize)
+	fmt.Printf("[nsm, send] response: %v\n", res[:300])
 	fmt.Printf("[nsm, send] response len: %d\n", len(res))
 	iovecReq := syscall.Iovec{
 		Base: &req[0],
@@ -117,7 +118,7 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 	}
 	fmt.Printf("[nsm, send] msg: %v\n", msg)
 	fmt.Printf("[nsm, send] msg size: %d\n", unsafe.Sizeof(msg))
-	
+
 	_, _, err := options.Syscall(
 		syscall.SYS_IOCTL,
 		fd,
@@ -207,7 +208,7 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 	if nil == sess.fd {
 		return res, errors.New("Session is closed")
 	}
-
+	fmt.Printf("[nsm, sendMarshaled] reqb: %v\n", reqb.Bytes())
 	resb, err := send(sess.options, sess.fd.Fd(), reqb.Bytes(), resb)
 	if nil != err {
 		return res, err
@@ -234,18 +235,18 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 // and Read call reserves at most 16KB of memory, so having multiple parallel
 // sends or reads might lead to increased memory usage.
 func (sess *Session) Read(into []byte) (int, error) {
-	fmt.Printf("[nsm] Read request size: %d\n", len(into))
+	fmt.Printf("[nsm, Read] request size: %d\n", len(into))
 	reqb := sess.reqpool.Get().(*bytes.Buffer)
-	fmt.Printf("[nsm] reqb: %v\n", reqb.String())
+	fmt.Printf("[nsm, Read] reqb: %v\n", reqb.String())
 	defer sess.reqpool.Put(reqb)
 
 	getRandom := request.GetRandom{}
-	fmt.Printf("[nsm] getRandom: %v\n", getRandom)
-	fmt.Printf("[nsm] getRandom.Encoded(): %v\n", getRandom.Encoded())
+	fmt.Printf("[nsm, Read] getRandom: %v\n", getRandom)
+	fmt.Printf("[nsm, Read] getRandom.Encoded(): %v\n", getRandom.Encoded())
 
 	reqb.Reset()
 	encoder := cbor.NewEncoder(reqb)
-	fmt.Printf("[nsm] encoder: %v\n", encoder)
+	fmt.Printf("[nsm, Read] encoder: %v\n", encoder)
 	err := encoder.Encode(getRandom.Encoded())
 	if nil != err {
 		return 0, err
@@ -255,8 +256,7 @@ func (sess *Session) Read(into []byte) (int, error) {
 	defer sess.respool.Put(resb)
 
 	for i := 0; i < len(into); i += 0 {
-		fmt.Printf("[nsm] loop %d\n", i)
-		fmt.Printf("[nsm] sendMarshaled request: %v\n", reqb.Bytes())
+		fmt.Printf("[nsm, Read] loop %d calling sendMarshaled\n", i)
 		res, err := sess.sendMarshaled(reqb, resb)
 
 		if nil != err {
@@ -271,7 +271,7 @@ func (sess *Session) Read(into []byte) (int, error) {
 
 		i += copy(into[i:], res.GetRandom.Random)
 	}
-	fmt.Printf("[nsm] Read response: %v\n", into)
+	fmt.Printf("[nsm, Read] response: %v\n", into)
 
 	return len(into), nil
 }

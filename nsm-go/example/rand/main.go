@@ -19,10 +19,12 @@ func generateBigPrime() (*big.Int, error) {
 }
 
 func main() {
+	fmt.Println("[nsm-go, example, rand] main starting")
 	prime, err := generateBigPrime()
 	if nil != err {
 		panic(err)
 	}
 
-	fmt.Println(prime)
+	fmt.Printf("[nsm-go, example, rand] prime generated: %v\n", prime)
+	fmt.Println("[nsm-go, example, rand] main finished")
 }
