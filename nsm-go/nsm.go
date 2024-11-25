@@ -97,13 +97,17 @@ type ioctlMessage struct {
 }
 
 func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
+	fmt.Printf("[nsm, send] input req: %v\n", req[:20])
+	fmt.Printf("[nsm, send] input req len: %d\n", len(req))
+	fmt.Printf("[nsm, send] input res: %v\n", res[:20])
+	fmt.Printf("[nsm, send] input res len: %d\n", len(res))
 	// request: [105 71 101 116 82 97 110 100 111 109]
 	// fmt.Printf("[nsm, send] request: %v\n", req)
 
 	// request len: 10
 	// fmt.Printf("[nsm, send] request len: %d\n", len(req))
 	
-	fmt.Printf("[nsm, send] response: %v\n", res[:20])
+	// fmt.Printf("[nsm, send] response: %v\n", res[:20])
 	
 	// Response contains n random bytes and then zeros until 12288 (maxResponseSize)
 	// fmt.Printf("[nsm, send] response len: %d\n", len(res))
@@ -139,6 +143,8 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 			Errno: err,
 		}
 	}
+
+	fmt.Printf("[nsm, send] returning result: %v\n", res[:msg.Response.Len])
 
 	return res[:msg.Response.Len], nil
 }
@@ -211,6 +217,10 @@ func (sess *Session) Send(req request.Request) (response.Response, error) {
 }
 
 func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Response, error) {
+	fmt.Printf("[nsm, sendMarshaled] input reqb: %v\n", reqb.Bytes())
+	fmt.Printf("[nsm, sendMarshaled] input reqb len: %d\n", reqb.Len())
+	fmt.Printf("[nsm, sendMarshaled] input resb: %v\n", resb[:20])
+	fmt.Printf("[nsm, sendMarshaled] input resb len: %d\n", len(resb))
 	res := response.Response{}
 
 	if nil == sess.fd {
@@ -235,6 +245,8 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 	} else {
 		fmt.Println("[nsm, sendMarshaled] GetRandom response is nil")
 	}
+
+	fmt.Printf("[nsm, sendMarshaled] returning res: %v\n", res)
 
 	return res, nil
 }
@@ -291,7 +303,7 @@ func (sess *Session) Read(into []byte) (int, error) {
 		j++
 	}
 
-	fmt.Println("[nsm, Read] returning function")
+	fmt.Printf("[nsm, Read] returning function with: %d\n", len(into))
 
 	return len(into), nil
 }
