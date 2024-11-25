@@ -35,16 +35,19 @@ const (
 
 // Command generates an ioctl command from the supplied arguments.
 func Command(dir, typ, nr, size uint) uint {
-	fmt.Printf("[ioc] Command input: dir: %d, typ: %d, nr: %d, size: %d\n", dir, typ, nr, size)
+	// [ioc] Command input: dir: 3, typ: 10, nr: 0, size: 32
+	// fmt.Printf("[ioc] Command input: dir: %d, typ: %d, nr: %d, size: %d\n", dir, typ, nr, size)
 
-	fmt.Printf("[ioc] cDIRSHIFT: %d, cTYPESHIFT: %d, cNRSHIFT: %d, cSIZESHIFT: %d\n", cDIRSHIFT, cTYPESHIFT, cNRSHIFT, cSIZESHIFT)
+	// [ioc] cDIRSHIFT: 30, cTYPESHIFT: 8, cNRSHIFT: 0, cSIZESHIFT: 16
+	// fmt.Printf("[ioc] cDIRSHIFT: %d, cTYPESHIFT: %d, cNRSHIFT: %d, cSIZESHIFT: %d\n", cDIRSHIFT, cTYPESHIFT, cNRSHIFT, cSIZESHIFT)
 
 	result := (((dir) << cDIRSHIFT) |
 		((typ) << cTYPESHIFT) |
 		((nr) << cNRSHIFT) |
 		((size) << cSIZESHIFT))
 
-	fmt.Printf("[ioc] Command output: %d\n", result)
+	// [ioc] Command output: 3223325184
+	// fmt.Printf("[ioc] Command output: %d\n", result)
 
 	return result
 }

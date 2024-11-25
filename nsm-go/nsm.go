@@ -268,16 +268,19 @@ func (sess *Session) Read(into []byte) (int, error) {
 		res, err := sess.sendMarshaled(reqb, resb)
 
 		if nil != err {
+			fmt.Printf("[nsm, Read] error1: %v\n", err)
 			return i, err
 		}
 
 		if "" != res.Error || nil == res.GetRandom || nil == res.GetRandom.Random || 0 == len(res.GetRandom.Random) {
+			fmt.Printf("[nsm, Read] error2: %v\n", res.Error)
 			return i, &ErrorGetRandomFailed{
 				ErrorCode: res.Error,
 			}
 		}
-
+		fmt.Printf("[nsm, Read] before copy(into[i:], res.GetRandom.Random): %v\n", into)
 		i += copy(into[i:], res.GetRandom.Random)
+		fmt.Printf("[nsm, Read] after copy(into[i:], res.GetRandom.Random): %v\n", into)
 		j++
 	}
 
