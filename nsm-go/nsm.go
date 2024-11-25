@@ -97,11 +97,16 @@ type ioctlMessage struct {
 }
 
 func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
-	fmt.Printf("[nsm, send] request: %v\n", req)
-	fmt.Printf("[nsm, send] request len: %d\n", len(req))
-	// Response contains 278 random bytes and then zeros until 12288 (maxResponseSize)
-	fmt.Printf("[nsm, send] response: %v\n", res[:300])
-	fmt.Printf("[nsm, send] response len: %d\n", len(res))
+	// request: [105 71 101 116 82 97 110 100 111 109]
+	// fmt.Printf("[nsm, send] request: %v\n", req)
+
+	// request len: 10
+	// fmt.Printf("[nsm, send] request len: %d\n", len(req))
+	
+	fmt.Printf("[nsm, send] response: %v\n", res[:20])
+	
+	// Response contains n random bytes and then zeros until 12288 (maxResponseSize)
+	// fmt.Printf("[nsm, send] response len: %d\n", len(res))
 	iovecReq := syscall.Iovec{
 		Base: &req[0],
 	}
@@ -116,8 +121,11 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 		Request:  iovecReq,
 		Response: iovecRes,
 	}
+	// msg: {{0x4000078000 10} {0x400007a000 12288}}
 	fmt.Printf("[nsm, send] msg: %v\n", msg)
-	fmt.Printf("[nsm, send] msg size: %d\n", unsafe.Sizeof(msg))
+
+	// msg size: 32
+	// fmt.Printf("[nsm, send] msg size: %d\n", unsafe.Sizeof(msg))
 
 	_, _, err := options.Syscall(
 		syscall.SYS_IOCTL,
@@ -220,7 +228,7 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 	}
 
 	if res.GetRandom != nil {
-		fmt.Printf("[nsm, sendMarshaled] GetRandom response: %v\n", res.GetRandom)
+		fmt.Printf("[nsm, sendMarshaled] GetRandom response: %v\n", res.GetRandom.Random[:20])
 	} else {
 		fmt.Println("[nsm, sendMarshaled] GetRandom response is nil")
 	}
@@ -241,13 +249,12 @@ func (sess *Session) Read(into []byte) (int, error) {
 	defer sess.reqpool.Put(reqb)
 
 	getRandom := request.GetRandom{}
-	fmt.Printf("[nsm, Read] getRandom: %v\n", getRandom)
 	fmt.Printf("[nsm, Read] getRandom.Encoded(): %v\n", getRandom.Encoded())
 
 	reqb.Reset()
 	encoder := cbor.NewEncoder(reqb)
-	fmt.Printf("[nsm, Read] encoder: %v\n", encoder)
 	err := encoder.Encode(getRandom.Encoded())
+	fmt.Printf("[nsm, Read] reqb after encoding: %v\n", reqb.Bytes())
 	if nil != err {
 		return 0, err
 	}
@@ -255,8 +262,9 @@ func (sess *Session) Read(into []byte) (int, error) {
 	resb := sess.respool.Get().([]byte)
 	defer sess.respool.Put(resb)
 
+	j := 0
 	for i := 0; i < len(into); i += 0 {
-		fmt.Printf("[nsm, Read] loop %d calling sendMarshaled\n", i)
+		fmt.Printf("[nsm, Read] loop %d calling sendMarshaled\n", j)
 		res, err := sess.sendMarshaled(reqb, resb)
 
 		if nil != err {
@@ -270,8 +278,8 @@ func (sess *Session) Read(into []byte) (int, error) {
 		}
 
 		i += copy(into[i:], res.GetRandom.Random)
+		j++
 	}
-	fmt.Printf("[nsm, Read] response: %v\n", into)
 
 	return len(into), nil
 }
