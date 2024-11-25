@@ -5,9 +5,9 @@
 // * https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/ioctl.h
 package ioc
 
-import (
-	"fmt"
-)
+// import (
+// 	"fmt"
+// )
 
 const (
 	cNRBITS    uint = 8
