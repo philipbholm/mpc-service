@@ -144,6 +144,7 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 		}
 	}
 
+	fmt.Printf("[nsm, send] msg.Response.Len: %d\n", msg.Response.Len)
 	fmt.Printf("[nsm, send] returning result: %v\n", res[:msg.Response.Len])
 
 	return res[:msg.Response.Len], nil
@@ -226,12 +227,15 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 	}
 	// [nsm, sendMarshaled] reqb: [105 71 101 116 82 97 110 100 111 109]
 	// fmt.Printf("[nsm, sendMarshaled] reqb: %v\n", reqb.Bytes())
+
 	// resb is 12288 zeros before send
 	// fmt.Printf("[nsm, sendMarshaled] before send resb: %v\n", resb)
-	fmt.Printf("[nsm, sendMarshaled] before send resb len: %d\n", len(resb))
+	// fmt.Printf("[nsm, sendMarshaled] before send resb len: %d\n", len(resb))
 	resb, err := send(sess.options, sess.fd.Fd(), reqb.Bytes(), resb)
-	fmt.Printf("[nsm, sendMarshaled] after send resb: %v\n", resb)
-	fmt.Printf("[nsm, sendMarshaled] after send resb len: %d\n", len(resb))
+	// fmt.Printf("[nsm, sendMarshaled] after send resb: %v\n", resb)
+	
+	// Always generates 278 random bytes, the same as output from send
+	// fmt.Printf("[nsm, sendMarshaled] after send resb len: %d\n", len(resb))
 	if nil != err {
 		return res, err
 	}
@@ -243,6 +247,7 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 
 	if res.GetRandom != nil {
 		fmt.Printf("[nsm, sendMarshaled] GetRandom response: %v\n", res.GetRandom.Random)
+		fmt.Printf("[nsm, sendMarshaled] GetRandom response len: %d\n", len(res.GetRandom.Random))
 	} else {
 		fmt.Println("[nsm, sendMarshaled] GetRandom response is nil")
 	}
