@@ -1,13 +1,13 @@
 package main
 
 import (
-    "crypto/rand"
     "fmt"
-    "math/big"
+    "errors"
     "github.com/hf/nsm"
+    "github.com/hf/nsm/request"
 )
 
-func generateBigPrime() (*big.Int, error) {
+func generateRandomBytes() ([]byte, error) {
     sess, err := nsm.OpenDefaultSession()
     defer sess.Close()
 
@@ -15,16 +15,25 @@ func generateBigPrime() (*big.Int, error) {
         return nil, err
     }
 
-    return rand.Prime(sess, 512)
+    res, err := sess.Send(&request.GetRandom{})
+    if nil != err {
+        return nil, err
+    }
+
+    if res.Error != "" {
+        return nil, errors.New(string(res.Error))
+    }
+
+    return res.GetRandom.Random, nil
 }
 
 func main() {
 	fmt.Println("[nsm-go, example, rand] main starting")
-	prime, err := generateBigPrime()
+	randomBytes, err := generateRandomBytes()
 	if nil != err {
 		panic(err)
 	}
 
-	fmt.Printf("[nsm-go, example, rand] prime generated: %v\n", prime)
+	fmt.Printf("[nsm-go, example, rand] random bytes generated: %v\n", randomBytes)
 	fmt.Println("[nsm-go, example, rand] main finished")
 }
