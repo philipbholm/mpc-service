@@ -144,7 +144,9 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 		}
 	}
 
+	// The length of the response is always 22 + 256 bytes
 	fmt.Printf("[nsm, send] msg.Response.Len: %d\n", msg.Response.Len)
+	// The first bytes are [161 105 71 101 116 82 97 110 100 111 109 161 102 114 97 110 100 111 109 89 1 0]
 	fmt.Printf("[nsm, send] returning result: %v\n", res[:msg.Response.Len])
 
 	return res[:msg.Response.Len], nil
@@ -246,13 +248,14 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 	}
 
 	if res.GetRandom != nil {
-		fmt.Printf("[nsm, sendMarshaled] GetRandom response: %v\n", res.GetRandom.Random)
+		// The response is always the last 256 bytes from send
 		fmt.Printf("[nsm, sendMarshaled] GetRandom response len: %d\n", len(res.GetRandom.Random))
+		fmt.Printf("[nsm, sendMarshaled] GetRandom response: %v\n", res.GetRandom.Random)
 	} else {
 		fmt.Println("[nsm, sendMarshaled] GetRandom response is nil")
 	}
 
-	fmt.Printf("[nsm, sendMarshaled] returning res: %v\n", res)
+	// fmt.Printf("[nsm, sendMarshaled] returning res: %v\n", res)
 
 	return res, nil
 }
