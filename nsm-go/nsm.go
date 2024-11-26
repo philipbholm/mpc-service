@@ -99,7 +99,7 @@ type ioctlMessage struct {
 func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 	fmt.Printf("[nsm, send] input req: %v\n", req)
 	fmt.Printf("[nsm, send] input req len: %d\n", len(req))
-	fmt.Printf("[nsm, send] input res: %v\n", res)
+	// fmt.Printf("[nsm, send] input res: %v\n", res)
 	fmt.Printf("[nsm, send] input res len: %d\n", len(res))
 	// request: [105 71 101 116 82 97 110 100 111 109]
 	// fmt.Printf("[nsm, send] request: %v\n", req)
@@ -219,8 +219,6 @@ func (sess *Session) Send(req request.Request) (response.Response, error) {
 func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Response, error) {
 	fmt.Printf("[nsm, sendMarshaled] input reqb: %v\n", reqb.Bytes())
 	fmt.Printf("[nsm, sendMarshaled] input reqb len: %d\n", reqb.Len())
-	fmt.Printf("[nsm, sendMarshaled] input resb: %v\n", resb)
-	fmt.Printf("[nsm, sendMarshaled] input resb len: %d\n", len(resb))
 	res := response.Response{}
 
 	if nil == sess.fd {
@@ -228,9 +226,12 @@ func (sess *Session) sendMarshaled(reqb *bytes.Buffer, resb []byte) (response.Re
 	}
 	// [nsm, sendMarshaled] reqb: [105 71 101 116 82 97 110 100 111 109]
 	// fmt.Printf("[nsm, sendMarshaled] reqb: %v\n", reqb.Bytes())
-	fmt.Printf("[nsm, sendMarshaled] before send resb: %v\n", resb)
+	// resb is 12288 zeros before send
+	// fmt.Printf("[nsm, sendMarshaled] before send resb: %v\n", resb)
+	fmt.Printf("[nsm, sendMarshaled] before send resb len: %d\n", len(resb))
 	resb, err := send(sess.options, sess.fd.Fd(), reqb.Bytes(), resb)
 	fmt.Printf("[nsm, sendMarshaled] after send resb: %v\n", resb)
+	fmt.Printf("[nsm, sendMarshaled] after send resb len: %d\n", len(resb))
 	if nil != err {
 		return res, err
 	}
