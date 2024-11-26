@@ -147,6 +147,7 @@ func send(options Options, fd uintptr, req []byte, res []byte) ([]byte, error) {
 	// The length of the response is always 22 + 256 bytes
 	fmt.Printf("[nsm, send] msg.Response.Len: %d\n", msg.Response.Len)
 	// The first bytes are [161 105 71 101 116 82 97 110 100 111 109 161 102 114 97 110 100 111 109 89 1 0]
+	// Encoded to ¡iGetRandom¡frandomY
 	fmt.Printf("[nsm, send] returning result: %v\n", res[:msg.Response.Len])
 
 	return res[:msg.Response.Len], nil
