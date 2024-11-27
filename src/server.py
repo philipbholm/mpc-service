@@ -86,7 +86,7 @@ class Server:
     def _setup_ssl_context(self):
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         ctx.load_cert_chain(certfile=self._cert_path, keyfile=self._key_path)
-        ctx.load_verify_locations(cafile="certs/client.pem")
+        ctx.load_verify_locations(cafile="/app/certs/client.pem")
         ctx.check_hostname = False  # Not helpful for self-signed certs
         ctx.minimum_version = ssl.TLSVersion.TLSv1_2
         ctx.maximum_version = ssl.TLSVersion.TLSv1_2
