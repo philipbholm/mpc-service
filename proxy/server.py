@@ -53,13 +53,16 @@ class Server:
                 print("[enclave] Client connection closed")
 
     def _generate_key_and_certificate(self):
-        print("[enclave] Generating key and certificate")
-        print("[enclave] Creating NSM session")
+        curve_order_hex = "01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa51868783bf2f966b7fcc0148f709a5d03bb5c9b8899c47aebb6fb71e91386409"
+        curve_order = int(curve_order_hex, 16)
+
         with NSMSession() as nsm:
-            random_bytes = nsm.get_random_bytes(521 // 8 * 2)
-        print(f"[enclave] Generated random bytes from nsm: {random_bytes}")
-        os.urandom = lambda size: random_bytes[:size]
-        private_key = ec.generate_private_key(ec.SECP521R1())
+            while True:
+                random_bytes = nsm.get_random_bytes(66)
+                private_value = int.from_bytes(random_bytes, byteorder="big")
+                if 0 < private_value < curve_order - 1:
+                    private_key = ec.derive_private_key(private_value, ec.SECP521R1())
+                    break
 
         subject = issuer = x509.Name(
             [x509.NameAttribute(NameOID.COMMON_NAME, "enclave")]

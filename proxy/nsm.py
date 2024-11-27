@@ -50,7 +50,7 @@ class NSMSession:
     def get_random_bytes(self, length):
         request = cbor2.dumps("GetRandom")
         response = cbor2.loads(self._send(request))
-        return response["GetRandom"]["random"]
+        return response["GetRandom"]["random"][:length]
 
     def _send(self, request):
         request = bytearray(request)
