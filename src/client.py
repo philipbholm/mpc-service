@@ -1,18 +1,19 @@
-import ssl
 import socket
+import ssl
 
-EC2_IP = "3.66.27.135"
+EC2_IP = "3.121.214.163"
 EC2_PORT = 8443
 
 
 def create_secure_connection(host, port):
-    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ctx.load_cert_chain(certfile="example/client.pem", keyfile="example/client.key")
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
     try:
         with socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
-        ) as client_socket, ssl_context.wrap_socket(
+        ) as client_socket, ctx.wrap_socket(
             client_socket, server_hostname=host
         ) as secure_socket:
             secure_socket.connect((host, port))
