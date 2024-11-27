@@ -6,7 +6,7 @@ docker build -t server .
 nitro-cli build-enclave --docker-uri server --output-file out.eif 
 nitro-cli run-enclave \
     --cpu-count 1 \
-    --memory 8000 \
+    --memory 4000 \
     --eif-path out.eif \
     --enclave-cid 4 \
     --debug-mode
