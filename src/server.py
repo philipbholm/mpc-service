@@ -1,5 +1,4 @@
 import datetime
-import os
 import socket
 import ssl
 
@@ -11,11 +10,6 @@ from cryptography.x509.oid import NameOID
 from nsm import NSMSession
 
 PORT = 8000
-
-# TODO: Update SSL context settings
-# TODO: Use private key to sign cert and make nsm sign the public key or certificate
-# TODO: Add error / context handling
-# TODO: Make multithreaded
 
 
 class Server:
@@ -90,9 +84,22 @@ class Server:
             )
 
     def _setup_ssl_context(self):
-        ssl_context = ssl.create_default_context()
-        ssl_context.load_cert_chain(certfile=self._cert_path, keyfile=self._key_path)
-        return ssl_context
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(certfile=self._cert_path, keyfile=self._key_path)
+        ctx.load_verify_locations(cafile="certs/client.pem")
+        ctx.check_hostname = False  # Not helpful for self-signed certs
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+        ctx.maximum_version = ssl.TLSVersion.TLSv1_2
+        ctx.verify_mode = ssl.CERT_REQUIRED
+        ctx.verify_flags = ssl.VERIFY_X509_STRICT
+        # ctx.set_ciphers("TLS_AES_256_GCM_SHA384")
+        # ctx.set_alpn_protocols(["h2", "http/1.1"])
+        # ctx.set_ecdh_curve("secp521r1")
+
+        ctx.options |= ssl.OP_NO_TICKET
+        ctx.options |= ssl.OP_SINGLE_ECDH_USE
+        ctx.options |= ssl.OP_SINGLE_DH_USE
+        return ctx
 
 
 if __name__ == "__main__":
