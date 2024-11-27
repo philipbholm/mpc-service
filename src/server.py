@@ -28,12 +28,11 @@ class Server:
         print(f"[enclave] Server listening on port {self.port}")
         while True:
             client_socket, client_address = self.server_socket.accept()
-            print(f"[enclave] Accepted connection from CID: {client_address[0]}")
-            secure_socket = self._ssl_context.wrap_socket(
-                client_socket, server_side=True
-            )
-            print(f"[enclave] Secure socket created: {secure_socket}")
             try:
+                secure_socket = self._ssl_context.wrap_socket(
+                    client_socket, server_side=True
+                )
+                print(f"[enclave] TLS established with {client_address}")
                 while True:
                     data = secure_socket.recv(4096)
                     if not data:
@@ -44,7 +43,7 @@ class Server:
                 print(f"[enclave] Error handling client: {e}")
             finally:
                 secure_socket.close()
-                print("[enclave] Client connection closed")
+                print(f"[enclave] TLS closed with {client_address}")
 
     def _generate_key_and_certificate(self):
         curve_order_hex = "01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffa51868783bf2f966b7fcc0148f709a5d03bb5c9b8899c47aebb6fb71e91386409"
