@@ -1,8 +1,8 @@
-import os
-import fcntl
-import struct
-import cbor2
 import ctypes
+import fcntl
+import os
+
+import cbor2
 
 MAX_REQUEST_SIZE = 0x1000
 MAX_RESPONSE_SIZE = 0x3000
@@ -46,6 +46,11 @@ class NSMSession:
         if self.fd is not None:
             os.close(self.fd)
             self.fd = None
+    
+    def get_random_bytes(self, length):
+        request = cbor2.dumps("GetRandom")
+        response = cbor2.loads(self._send(request))
+        return response["GetRandom"]["random"]
 
     def _send(self, request):
         request = bytearray(request)
@@ -56,45 +61,26 @@ class NSMSession:
 
         iovec_req = Iovec(
             base=ctypes.cast(ctypes.pointer(req_array), ctypes.c_void_p).value,
-            len=len(request)
+            len=len(request),
         )
 
         iovec_res = Iovec(
             base=ctypes.cast(ctypes.pointer(res_array), ctypes.c_void_p).value,
-            len=len(response)
+            len=len(response),
         )
 
         ioctl_msg = IoctlMessage(request=iovec_req, response=iovec_res)
-        print(f"""IoctlMessage:
-        Request:
-            Base: 0x{ioctl_msg.request.base:x}
-            Length: {ioctl_msg.request.len}
-        Response:
-            Base: 0x{ioctl_msg.response.base:x}
-            Length: {ioctl_msg.response.len}""")
 
-
-        # Using _IOC(3, IOCTL_MAGIC, 0, sizeof(struct iovec) * 2)
         # [ioc] Command input: dir: 3, typ: 10, nr: 0, size: 32
         # [ioc] cDIRSHIFT: 30, cTYPESHIFT: 8, cNRSHIFT: 0, cSIZESHIFT: 16
-        # [ioc] Command output: 3223325184
-        # ioctl_cmd = (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (len(ioctl_msg) << 16)
-        ioctl_cmd = 3223325184
+        ioctl_cmd = (
+            (3 << 30) | (IOCTL_MAGIC << 8) | (0 << 0) | (ctypes.sizeof(ioctl_msg) << 16)
+        )
 
         try:
             fcntl.ioctl(self.fd, ioctl_cmd, ioctl_msg)
-            result = bytes(response[:ioctl_msg.response.len])
-            print(f"[nsm] result: {result}")
+            result = bytes(response[: ioctl_msg.response.len])
             return result
         except Exception as e:
             print(f"[nsm] _send failed: {e}")
             raise e
-
-    def get_random_bytes(self, length):
-        request = cbor2.dumps("GetRandom")
-        print(f"[nsm] get_random_bytes request: {request}")
-        response_data = self._send(request)
-        print(f"[nsm] get_random_bytes response_data: {response_data}")
-        response = cbor2.loads(response_data)
-        print(f"[nsm] get_random_bytes response: {response}")
-        return response
