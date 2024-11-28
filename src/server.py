@@ -42,7 +42,9 @@ class Server:
                     if not data:
                         break
                 print(f"[enclave] Received: {data}")
-                secure_socket.sendall(self._get_attestation_document(data))
+                nonce = bytes.fromhex(data.decode("utf-8"))
+                print(f"[enclave] Nonce: {nonce}")
+                secure_socket.sendall(self._get_attestation_document(nonce))
             except Exception as e:
                 print(f"[enclave] Error handling client: {e}")
             finally:
