@@ -24,7 +24,6 @@ class Server:
         self._certificate = None
         self._generate_key_and_certificate()
         self._ssl_context = self._setup_ssl_context()
-        self._attestation_document = self._get_attestation_document()
 
     def start(self):
         self.server_socket = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
@@ -43,7 +42,7 @@ class Server:
                     if not data:
                         break
                     print(f"[enclave] Received: {data.decode('utf-8')}")
-                    secure_socket.sendall(self._attestation_document)
+                    secure_socket.sendall(self._get_attestation_document(data))
             except Exception as e:
                 print(f"[enclave] Error handling client: {e}")
             finally:
@@ -106,12 +105,12 @@ class Server:
         ctx.options |= ssl.OP_SINGLE_DH_USE
         return ctx
 
-    def _get_attestation_document(self):
+    def _get_attestation_document(self, nonce):
         certificate_hash = hashlib.sha256(self._certificate.public_bytes(serialization.Encoding.DER)).digest()
         with NSMSession() as nsm:
             return nsm.get_attestation_document(
                 user_data=certificate_hash,
-                nonce=b"\x87\xc0\xbb\xe1\xa8\xd9\xa2K\x1c<J\x9a\x83\x9f\x02\x1a\xe5\xf73\xd1",
+                nonce=nonce,
                 public_key=self._public_key.public_bytes(
                     encoding=serialization.Encoding.DER,
                     format=serialization.PublicFormat.SubjectPublicKeyInfo
