@@ -11,16 +11,13 @@ def create_secure_connection(host, port):
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     try:
-        with socket.socket(
-            socket.AF_INET, socket.SOCK_STREAM
-        ) as client_socket, ctx.wrap_socket(
-            client_socket, server_hostname=host
-        ) as secure_socket:
-            secure_socket.connect((host, port))
-            message = "Hello Secure Server!"
-            secure_socket.send(message.encode("utf-8"))
-            response = secure_socket.recv(1024).decode("utf-8")
-            print(f"Server response: {response}")
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_sock:
+            with ctx.wrap_socket(client_sock, server_hostname=host) as tls_sock:
+                tls_sock.connect((host, port))
+                message = "Hello Secure Server!"
+                tls_sock.send(message.encode("utf-8"))
+                response = tls_sock.recv(4096)
+                print(f"Server response: {response}")
 
     except ConnectionRefusedError:
         print(f"Connection refused by {host}:{port}")
