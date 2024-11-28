@@ -37,10 +37,12 @@ class Server:
                     client_socket, server_side=True
                 )
                 print(f"[enclave] TLS established with {client_address}")
+                data = b""
                 while True:
-                    data = secure_socket.recv(4096)
-                    if not data:
+                    chunk = secure_socket.recv(4096)
+                    if not chunk:
                         break
+                    data += chunk
                 print(f"[enclave] Received: {data}")
                 nonce = bytes.fromhex(data.decode("utf-8"))
                 print(f"[enclave] Nonce: {nonce}")
