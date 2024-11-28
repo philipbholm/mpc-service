@@ -62,7 +62,7 @@ class NSMSession:
             }
         })
         response = cbor2.loads(self._send(request))
-        return base64.b64encode(response["Attestation"]["document"]).decode("utf-8")
+        return base64.b64encode(response["Attestation"]["document"])
 
     def _send(self, request):
         request = bytearray(request)
