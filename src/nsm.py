@@ -1,3 +1,4 @@
+import base64
 import ctypes
 import fcntl
 import os
@@ -61,7 +62,7 @@ class NSMSession:
             }
         })
         response = cbor2.loads(self._send(request))
-        return response["Attestation"]["document"]
+        return base64.b64encode(response["Attestation"]["document"]).decode("utf-8")
 
     def _send(self, request):
         request = bytearray(request)
