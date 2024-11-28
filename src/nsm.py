@@ -51,6 +51,17 @@ class NSMSession:
         request = cbor2.dumps("GetRandom")
         response = cbor2.loads(self._send(request))
         return response["GetRandom"]["random"][:length]
+    
+    def get_attestation_document(self, user_data, nonce, public_key):
+        request = cbor2.dumps({
+            "Attestation": {
+                "user_data": user_data,
+                "nonce": nonce,
+                "public_key": public_key,
+            }
+        })
+        response = cbor2.loads(self._send(request))
+        return response["Attestation"]["document"]
 
     def _send(self, request):
         request = bytearray(request)

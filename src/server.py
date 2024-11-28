@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import socket
 import ssl
 
@@ -18,8 +19,12 @@ class Server:
         self.server_socket = None
         self._key_path = "enclave.key"
         self._cert_path = "enclave.pem"
+        self._private_key = None
+        self._public_key = None
+        self._certificate = None
         self._generate_key_and_certificate()
         self._ssl_context = self._setup_ssl_context()
+        self._attestation_document = self._get_attestation_document()
 
     def start(self):
         self.server_socket = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
@@ -38,7 +43,7 @@ class Server:
                     if not data:
                         break
                     print(f"[enclave] Received: {data.decode('utf-8')}")
-                    secure_socket.sendall(b"Message received by enclave\n")
+                    secure_socket.sendall(self._attestation_document)
             except Exception as e:
                 print(f"[enclave] Error handling client: {e}")
             finally:
@@ -54,28 +59,29 @@ class Server:
                 random_bytes = nsm.get_random_bytes(66)
                 private_value = int.from_bytes(random_bytes, byteorder="big")
                 if 0 < private_value < curve_order - 1:
-                    private_key = ec.derive_private_key(private_value, ec.SECP521R1())
+                    self._private_key = ec.derive_private_key(private_value, ec.SECP521R1())
+                    self._public_key = self._private_key.public_key()
                     break
 
         subject = issuer = x509.Name(
             [x509.NameAttribute(NameOID.COMMON_NAME, "enclave")]
         )
-        certificate = (
+        self._certificate = (
             x509.CertificateBuilder()
             .subject_name(subject)
             .issuer_name(issuer)
-            .public_key(private_key.public_key())
+            .public_key(self._public_key)
             .serial_number(x509.random_serial_number())
             .not_valid_before(datetime.datetime.utcnow())
             .not_valid_after(datetime.datetime.utcnow() + datetime.timedelta(days=10))
-            .sign(private_key, hashes.SHA256())
+            .sign(self._private_key, hashes.SHA256())
         )
 
         with open(self._cert_path, "wb") as cert_file:
-            cert_file.write(certificate.public_bytes(serialization.Encoding.PEM))
+            cert_file.write(self._certificate.public_bytes(serialization.Encoding.PEM))
         with open(self._key_path, "wb") as key_file:
             key_file.write(
-                private_key.private_bytes(
+                self._private_key.private_bytes(
                     encoding=serialization.Encoding.PEM,
                     format=serialization.PrivateFormat.TraditionalOpenSSL,
                     encryption_algorithm=serialization.NoEncryption(),
@@ -99,6 +105,18 @@ class Server:
         ctx.options |= ssl.OP_SINGLE_ECDH_USE
         ctx.options |= ssl.OP_SINGLE_DH_USE
         return ctx
+
+    def _get_attestation_document(self):
+        certificate_hash = hashlib.sha256(self._certificate.public_bytes(serialization.Encoding.DER)).digest()
+        with NSMSession() as nsm:
+            return nsm.get_attestation_document(
+                user_data=certificate_hash,
+                nonce=b"\x87\xc0\xbb\xe1\xa8\xd9\xa2K\x1c<J\x9a\x83\x9f\x02\x1a\xe5\xf73\xd1",
+                public_key=self._public_key.public_bytes(
+                    encoding=serialization.Encoding.DER,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                ),
+            )
 
 
 if __name__ == "__main__":
