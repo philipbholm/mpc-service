@@ -75,11 +75,9 @@ class Proxy:
                 if not readable:
                     break
                 data = source.recv(4096)
-                print(f"[proxy] Received data from {source}: {data}")
                 if not data:
                     break
                 destination.sendall(data)
-                print(f"[proxy] Sent data to {destination}: {data}")
         except Exception as e:
             print(f"[proxy] Failed to forward data from {source} to {destination}: {e}")
 
